@@ -485,7 +485,9 @@ function drawCard(){
   drawing=true;started=true;
   let inner=$("cardInner");inner.classList.remove("flipped");flipped=false;
   let c=$("cardContainer");c.classList.remove("card-in");
+  let snap=deck;
   setTimeout(()=>{
+    if(deck!==snap){drawing=false;return;}
     cardIdx=deck.pop();drawnCount++;updateQ();applyTheme();ti++;
     c.classList.add("card-in");drawing=false;updateUI();
     if(navigator.vibrate)navigator.vibrate(15);
@@ -508,13 +510,13 @@ function handleCardTap(){
   else{nextCard()}
 }
 
-function resetDeck(){
-  let n=DATA.en.questions.length;
+function resetDeck(silent){
+  let n=Math.max(DATA.en.questions.length,DATA.pl.questions.length);
   deck=shuffle([...Array(n).keys()]);deckSize=deck.length;
   ti=0;flipped=false;cardIdx=null;drawing=false;started=false;drawnCount=0;
   $("cardInner").classList.remove("flipped");
   $("cardContainer").classList.remove("card-in");
-  updateQ();updateUI();showToast(DATA[lang].toastReset);
+  updateQ();updateUI();if(!silent)showToast(DATA[lang].toastReset);
 }
 
 function shuffleRemaining(){
@@ -540,7 +542,7 @@ ca.addEventListener("touchend",e=>{
   if(dy>60&&dy>dx){if(flipped)nextCard();else if(cardIdx!==null)flipCard()}
 },{passive:true});
 
-setTexts();resetDeck();
+setTexts();resetDeck(true);
 </script>
 </body>
 </html>
