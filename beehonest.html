@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>BeeHonest</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="shortcut icon" href="favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="BeeHonest" />
+<meta name="theme-color" content="#1a1a2e" />
+<link rel="manifest" href="site.webmanifest" />
+  
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  background:#FFF8F0;
+  min-height:100vh;min-height:100dvh;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;-webkit-user-select:none;
+}
+
+.app{
+  display:flex;flex-direction:column;
+  height:100vh;height:100dvh;
+  max-width:440px;margin:0 auto;
+  padding:calc(16px + var(--safe-top)) 20px calc(16px + var(--safe-bottom));
+}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-bottom:8px}
+.header h1{font-size:1.3rem;font-weight:900;color:#1a1a2e;letter-spacing:-.01em}
+.header p{font-size:12px;color:#999;font-weight:700;margin-top:1px}
+.lang-btn{
+  display:flex;align-items:center;gap:5px;
+  background:#fff;border:3px solid #1a1a2e;color:#1a1a2e;
+  border-radius:14px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;
+  font-family:inherit;transition:transform .15s;
+}
+.lang-btn:active{transform:scale(.93)}
+.lang-btn svg{width:15px;height:15px}
+
+/* Progress */
+.progress-section{flex-shrink:0;padding-bottom:14px}
+.progress-meta{display:flex;justify-content:space-between;margin-bottom:6px}
+.progress-meta span{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#aaa}
+.progress-track{width:100%;height:10px;border-radius:99px;background:#fff;border:3px solid #1a1a2e;overflow:hidden}
+.progress-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#FF6B6B,#FFD93D,#6BCB77,#4D96FF);background-size:300% 100%;animation:barShift 4s linear infinite;transition:width .5s cubic-bezier(.4,0,.2,1)}
+@keyframes barShift{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+
+/* Card Area */
+.card-area{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;padding:4px 0}
+
+/* Deck View */
+.deck-view{display:flex;flex-direction:column;align-items:center;gap:20px;width:100%}
+.deck-stack{position:relative;width:min(100%, 330px, calc((100dvh - 210px - var(--safe-top) - var(--safe-bottom)) * 3 / 4.2));aspect-ratio:3/4.2;cursor:pointer}
+.deck-ghost{
+  position:absolute;inset:0;border-radius:24px;
+  border:3.5px solid #1a1a2e;
+}
+.deck-ghost:nth-child(1){background:#FFD93D}
+.deck-ghost:nth-child(2){background:#6BCB77}
+.deck-top-wrap{
+  position:absolute;inset:0;z-index:3;border-radius:24px;
+  background:#4D96FF;border:3.5px solid #1a1a2e;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  transition:transform .15s;
+  box-shadow:6px 6px 0 #1a1a2e;
+}
+.deck-top-wrap:active{transform:scale(.96);box-shadow:3px 3px 0 #1a1a2e}
+.deck-top-wrap.empty{opacity:.3;pointer-events:none}
+.deck-icon{
+  width:60px;height:60px;display:flex;align-items:center;justify-content:center;
+  border-radius:18px;background:#fff;border:3px solid #1a1a2e;
+  box-shadow:3px 3px 0 #1a1a2e;
+  color:#1a1a2e;
+}
+.deck-label{font-size:15px;font-weight:800;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.15)}
+.deck-sublabel{font-size:12px;font-weight:700;color:rgba(255,255,255,.7)}
+.deck-bounce{animation:bounce 2.5s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+
+/* ── Card ── */
+.card-container{
+  width:min(100%, 330px, calc((100dvh - 210px - var(--safe-top) - var(--safe-bottom)) * 3 / 4.2));aspect-ratio:3/4.2;
+  perspective:1200px;cursor:pointer;position:relative;
+}
+.card-inner{
+  width:100%;height:100%;position:relative;
+  transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.4,0,.15,1);
+}
+.card-inner.flipped{transform:rotateY(180deg)}
+
+.card-face{
+  position:absolute;inset:0;width:100%;height:100%;
+  border-radius:26px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 28px;overflow:hidden;
+  border:3.5px solid #1a1a2e;
+}
+
+/* Front */
+.card-front{
+  background:#fff;
+  box-shadow:6px 6px 0 #1a1a2e;
+}
+.front-icon{
+  width:56px;height:56px;display:flex;align-items:center;justify-content:center;
+  border-radius:16px;background:rgba(0,0,0,.04);border:3px solid #1a1a2e;
+  box-shadow:3px 3px 0 #1a1a2e;margin-bottom:14px;color:#1a1a2e;
+}
+.front-hint{font-size:16px;font-weight:800;color:#1a1a2e}
+.front-sub{font-size:12px;color:#aaa;font-weight:700;margin-top:2px}
+
+/* Corner deco */
+.card-corner{position:absolute;font-size:20px;font-weight:900;color:#1a1a2e;opacity:.08}
+.card-corner.tl{top:16px;left:18px}
+.card-corner.br{bottom:16px;right:18px;transform:rotate(180deg)}
+
+/* Back */
+.card-back{
+  transform:rotateY(180deg);
+  /* The shadow is reversed here (-6px) so it visually matches the front shadow exactly when the card is flipped 180deg */
+  box-shadow:-6px 6px 0 #1a1a2e;
+  position:relative;
+}
+
+.t0 .card-back,.t0 .card-front{background:#FFF0F0}
+.t1 .card-back,.t1 .card-front{background:#FFFBEB}
+.t2 .card-back,.t2 .card-front{background:#F0FFF4}
+.t3 .card-back,.t3 .card-front{background:#EFF6FF}
+.t4 .card-back,.t4 .card-front{background:#FDF4FF}
+.t5 .card-back,.t5 .card-front{background:#FFF7ED}
+
+/* Printed look: text area on back */
+.print-area{
+  width:100%;max-width:260px;position:relative;
+}
+.q-text{
+  font-size:1.1rem;font-weight:800;text-align:center;line-height:1.6;
+  color:#1a1a2e;
+}
+
+/* Back corner emojis - hidden */
+.back-deco{display:none}
+
+/* Swipe hint */
+.swipe-hint{
+  position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+  color:#bbb;opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.swipe-hint.visible{opacity:1}
+
+/* Empty State */
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.empty-icon{
+  width:56px;height:56px;display:flex;align-items:center;justify-content:center;
+  border-radius:16px;background:#fff;border:3px solid #1a1a2e;
+  box-shadow:3px 3px 0 #1a1a2e;color:#1a1a2e;
+}
+.empty-title{font-size:17px;font-weight:900;color:#1a1a2e}
+.empty-sub{font-size:13px;color:#999;font-weight:700}
+
+/* Actions */
+.actions{flex-shrink:0;padding-top:14px;display:flex;gap:10px}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 20px;font-size:15px;font-weight:800;
+  border-radius:16px;border:3px solid #1a1a2e;cursor:pointer;
+  font-family:inherit;transition:transform .12s,box-shadow .12s;min-height:54px;
+}
+.btn:active{transform:scale(.95) translateY(2px);box-shadow:2px 2px 0 #1a1a2e !important}
+.btn-primary{
+  flex:1;color:#fff;background:#FF6B6B;
+  box-shadow:4px 4px 0 #1a1a2e;
+}
+.btn-primary:disabled{opacity:.3;pointer-events:none}
+.btn-secondary{
+  background:#fff;color:#1a1a2e;
+  box-shadow:4px 4px 0 #1a1a2e;
+  padding:14px 18px; /* Slightly tighter for purely icon buttons */
+}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:calc(100px + var(--safe-bottom));left:50%;
+  transform:translateX(-50%) translateY(12px);
+  background:#1a1a2e;color:#fff;
+  padding:10px 24px;border-radius:99px;border:3px solid #1a1a2e;
+  font-size:13px;font-weight:800;opacity:0;pointer-events:none;
+  transition:opacity .25s,transform .25s;z-index:100;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@keyframes cardIn{from{opacity:0;transform:translateY(30px) rotate(-3deg) scale(.9)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
+.card-in{animation:cardIn .4s cubic-bezier(.3,0,.2,1.2)}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div>
+      <h1 id="title">BeeHonest</h1>
+      <p id="subtitle">Draw · Flip · Connect</p>
+    </div>
+    <button type="button" class="lang-btn" id="langBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+      <span id="langLabel">PL</span>
+    </button>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-meta">
+      <span id="progressCount"></span>
+      <span id="progressRemaining"></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="card-area" id="cardArea">
+    <!-- Deck -->
+    <div class="deck-view" id="deckView">
+      <div class="deck-stack" id="deckTop">
+        <div class="deck-ghost" style="transform:rotate(-7deg) translateY(10px)"></div>
+        <div class="deck-ghost" style="transform:rotate(-3.5deg) translateY(5px)"></div>
+        <div class="deck-top-wrap deck-bounce">
+          <div class="deck-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          </div>
+          <span class="deck-label" id="deckLabel">Tap to draw</span>
+          <span class="deck-sublabel" id="deckSublabel"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="card-container" id="cardContainer" style="display:none">
+      <div class="card-inner" id="cardInner">
+        <div class="card-face card-front">
+          <span class="card-corner tl">✦</span>
+          <span class="card-corner br">✦</span>
+          <div class="front-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+          </div>
+          <p class="front-hint" id="flipHint">Tap to reveal</p>
+          <p class="front-sub" id="flipSub">or swipe up</p>
+        </div>
+        <div class="card-face card-back" id="cardBack">
+          <div class="print-area">
+            <p class="q-text" id="questionText"></p>
+          </div>
+        </div>
+      </div>
+      <div class="swipe-hint" id="swipeHint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l7-7 7 7"/></svg>
+        <span id="swipeLabel">Swipe up for next</span>
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+      </div>
+      <p class="empty-title" id="emptyTitle">All cards drawn!</p>
+      <p class="empty-sub" id="emptySub">Reset the deck to start again.</p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <!-- Reset Button -->
+    <button type="button" class="btn btn-secondary" id="resetBtn" title="Reset Deck">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+    </button>
+    <!-- Shuffle Button -->
+    <button type="button" class="btn btn-secondary" id="shuffleBtn" title="Shuffle Remaining">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+    </button>
+    <!-- Draw Button -->
+    <button type="button" class="btn btn-primary" id="drawBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      <span id="drawLabel">Draw card</span>
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const THEMES=['t0','t1','t2','t3','t4','t5'];
+
+const DATA={
+  en:{
+    title:"BeeHonest",subtitle:"Draw · Flip · Connect",
+    deckLabel:"Tap to draw",flipHint:"Tap to reveal",flipSub:"or swipe up",
+    swipeLabel:"Swipe up for next",drawBtn:"Draw card",
+    drawn:(n,t)=>`${n} of ${t} drawn`,left:n=>`${n} remaining`,
+    langLabel:"PL",emptyTitle:"All cards drawn!",emptySub:"Reset the deck to start again.",
+    toastReset:"Deck reset",
+    toastShuffle:"Cards shuffled",
+    toastNoShuffle:"Not enough cards to shuffle",
+    questions:[
+      "What color are aliens?",
+      "Would you like to go back in time or go to the future?",
+      "Who did you want to be when you were a teenager?",
+      "What is the best piece of advice you've ever received?",
+      "What was the worst job you ever had?",
+      "What is one thing we don’t know about you?",
+      "If you could live anywhere in the world for a year, where would it be?",
+      "Would you rather be the funniest or smartest person in the room?",
+      "Would you rather visit a volcano or a rainforest?",
+      "Describe your dream holiday if money was no limit.",
+      "When you were a child, what was your biggest dream?",
+      "What talent would you most like to grow and develop?",
+      "What activities do you dream of trying someday?",
+      "Professional, casual, or sweatpants? If there were no dress code, how would you dress for work?",
+      "You have one extra hour a day, you can do anything, what would you do?",
+      "What “old person” things do you do?",
+      "If you could speak another language, what would it be?",
+      "Do you have a bucket list? Name one thing on your bucket list.",
+      "What is something new or interesting that you've learned recently?",
+      "Is there any topic lately that you would like to be mentored on?",
+      "If you were reincarnated as an animal, what would you choose and why?",
+      "When was the last time you did something for the first time?",
+      "Have you ever experienced a culture shock? Where was it and what happened?",
+      "Have you learned any useful productivity hacks recently?",
+      "What’s an adventurous thing you’ve done or want to do?",
+      "Which do you prefer, oceans or mountains? Why?",
+      "What scientific discoveries would you like to live to see?",
+      "What scientific achievements would you like to witness?",
+      "If you could give a piece of advice to your younger self, what would it be?",
+      "What you as a kid would tell yourself now?",
+      "If you could go back in time and learn one thing, what would it be?",
+      "What were your happiest moments?",
+      "What is one work-related skill you would like to develop, particularly if it could be done easily?",
+      "What new, or additional, skill do you think you need now to progress further?",
+      "What do you admire most in a work colleague?",
+      "Describe yourself in one word.",
+      "What is the worst piece of advice you've ever received, and why was it so bad?",
+      "What is one productivity tool you couldn't live without, and why is it indispensable?",
+      "What is one trait you don’t like the most in yourself?",
+      "What is your greatest fear?",
+      "Which talent would you most like to have?",
+      "What do you consider your greatest achievement?",
+      "What is your greatest extravagance?",
+      "What do you dislike most about your appearance?",
+      "What is your most treasured possession?",
+      "What do you most value in your friends?",
+      "What is it that you most dislike?",
+      "Who are your heroes in real life?",
+      "What is your favorite journey?",
+      "How would you like to die?",
+      "Share one boring or trivial fact about yourself.",
+      "What movie are we in now, or what movie do you play in?"
+    ]
+  },
+  pl:{
+    title:"Karty Rozmów",subtitle:"Dobierz · Odwróć · Połącz",
+    deckLabel:"Dotknij, aby dobrać",flipHint:"Dotknij, aby odkryć",flipSub:"lub przesuń w górę",
+    swipeLabel:"Przesuń w górę",drawBtn:"Dobierz kartę",
+    drawn:(n,t)=>`${n} z ${t} dobranych`,left:n=>`${n} pozostało`,
+    langLabel:"EN",emptyTitle:"Wszystkie karty dobrane!",emptySub:"Zresetuj, aby zacząć od nowa.",
+    toastReset:"Talia zresetowana",
+    toastShuffle:"Karty przetasowane",
+    toastNoShuffle:"Za mało kart",
+    questions:[
+      "Jakiego koloru są kosmici?",
+      "Wolałbyś/wolałabyś cofnąć się w czasie czy przenieść do przyszłości?",
+      "Kim chciałeś/chciałaś zostać, gdy byłeś/byłaś nastolatkiem?",
+      "Jaka jest najlepsza rada, jaką kiedykolwiek otrzymałeś/aś?",
+      "Jaka była najgorsza praca, jaką kiedykolwiek miałeś/aś?",
+      "Jakiej jednej rzeczy o tobie nie wiemy?",
+      "Gdybyś mógł/mogła mieszkać przez rok w dowolnym miejscu na świecie, gdzie by to było?",
+      "Wolał(a)byś być najzabawniejszą czy najmądrzejszą osobą w pokoju?",
+      "Wolał(a)byś odwiedzić wulkan czy las deszczowy?",
+      "Opisz swoje wymarzone wakacje, gdyby pieniądze nie grały roli.",
+      "Kiedy byłeś/aś dzieckiem, jakie było twoje największe marzenie?",
+      "Jaki talent najbardziej chciał(a)byś rozwijać?",
+      "Jakich aktywności marzysz, aby kiedyś spróbować?",
+      "Elegancko, na luzie czy w dresie? Gdyby nie było dress code'u, jak ubierał(a)byś się do pracy?",
+      "Masz jedną dodatkową godzinę dziennie, możesz robić co chcesz, co by to było?",
+      "Jakie \"rzeczy dla starszych ludzi\" robisz?",
+      "Gdybyś mógł/mogła mówić w innym języku, jaki by to był język?",
+      "Czy masz listę rzeczy do zrobienia przed śmiercią (bucket list)? Wymień jedną rzecz z tej listy.",
+      "Czego nowego lub ciekawego ostatnio się nauczyłeś/aś?",
+      "Czy jest ostatnio jakiś temat, z którego chciał(a)byś mieć mentora?",
+      "Gdybyś miał(a) reinkarnować jako zwierzę, co byś wybrał(a) i dlaczego?",
+      "Kiedy ostatni raz zrobiłeś/aś coś po raz pierwszy?",
+      "Czy kiedykolwiek przeżyłeś/aś szok kulturowy? Gdzie to było i co się stało?",
+      "Czy poznałeś/aś ostatnio jakieś przydatne triki na produktywność?",
+      "Jaką najodważniejszą/najbardziej ryzykowną rzecz zrobiłeś/aś lub chcesz zrobić?",
+      "Co wolisz, oceany czy góry? Dlaczego?",
+      "Jakich odkryć naukowych chciał(a)byś dożyć?",
+      "Jakich osiągnięć naukowych chciał(a)byś być świadkiem?",
+      "Gdybyś mógł/mogła dać radę swojemu młodszemu \"ja\", co by to było?",
+      "Co jako dziecko powiedział(a)byś sobie teraz?",
+      "Gdybyś mógł/mogła cofnąć się w czasie i nauczyć jednej rzeczy, co by to było?",
+      "Jakie były twoje najszczęśliwsze chwile?",
+      "Jaką jedną umiejętność związaną z pracą chciał(a)byś rozwinąć, zwłaszcza gdyby to było łatwe?",
+      "Jakiej nowej lub dodatkowej umiejętności uważasz, że potrzebujesz teraz, aby pójść dalej?",
+      "Co najbardziej podziwiasz u współpracownika?",
+      "Opisz siebie jednym słowem.",
+      "Jaka jest najgorsza rada, jaką kiedykolwiek otrzymałeś/aś, i dlaczego była taka zła?",
+      "Jakie jest jedno narzędzie do produktywności, bez którego nie mógł(a)byś żyć i dlaczego jest niezbędne?",
+      "Jakiej jednej cechy najbardziej w sobie nie lubisz?",
+      "Czego najbardziej się boisz?",
+      "Jaki talent najbardziej chciał(a)byś mieć?",
+      "Co uważasz za swoje największe osiągnięcie?",
+      "Jaka jest twoja największa ekstrawagancja?",
+      "Czego najbardziej nie lubisz w swoim wyglądzie?",
+      "Jaka jest twoja najcenniejsza rzecz?",
+      "Co najbardziej cenisz w swoich przyjaciołach?",
+      "Czego najbardziej nie lubisz?",
+      "Kto jest twoim bohaterem w prawdziwym życiu?",
+      "Jaka jest twoja ulubiona podróż?",
+      "Jak chciał(a)byś umrzeć?",
+      "Podziel się jednym nudnym lub trywialnym faktem o sobie.",
+      "W jakim filmie teraz jesteśmy lub w jakim filmie grasz?"
+    ]
+  }
+};
+
+let lang="en",deck=[],deckSize=0,ti=0,flipped=false,cardIdx=null,drawing=false,started=false,drawnCount=0,toastT=null;
+let tsy=0,tsx=0;
+const $=id=>document.getElementById(id);
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function showToast(m){let t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),1500)}
+
+function applyTheme(){
+  let c=$("cardContainer");
+  THEMES.forEach(t=>c.classList.remove(t));
+  c.classList.add(THEMES[ti%THEMES.length]);
+}
+
+function setTexts(){
+  let d=DATA[lang];
+  $("title").textContent=d.title;$("subtitle").textContent=d.subtitle;
+  $("deckLabel").textContent=d.deckLabel;$("flipHint").textContent=d.flipHint;
+  $("flipSub").textContent=d.flipSub;$("swipeLabel").textContent=d.swipeLabel;
+  $("drawLabel").textContent=d.drawBtn;$("langLabel").textContent=d.langLabel;
+  $("emptyTitle").textContent=d.emptyTitle;$("emptySub").textContent=d.emptySub;
+}
+
+function updateQ(){
+  $("questionText").textContent=cardIdx!==null?DATA[lang].questions[cardIdx]:"";
+}
+
+function updateUI(){
+  let d=DATA[lang],rem=deck.length,drawn=deckSize-rem,pct=deckSize>0?(drawn/deckSize)*100:0;
+  $("progressFill").style.width=pct+"%";
+  $("progressCount").textContent=d.drawn(drawn,deckSize);
+  $("progressRemaining").textContent=d.left(rem);
+  $("deckSublabel").textContent=d.left(rem);
+  $("drawBtn").disabled=rem===0;
+
+  if(rem===0&&started){
+    $("deckView").style.display="none";$("cardContainer").style.display="none";$("emptyState").style.display="flex";
+  }else if(started){
+    $("deckView").style.display="none";$("cardContainer").style.display="block";$("emptyState").style.display="none";
+  }else{
+    $("deckView").style.display="flex";$("cardContainer").style.display="none";$("emptyState").style.display="none";
+  }
+  let h=$("swipeHint");flipped&&rem>0?h.classList.add("visible"):h.classList.remove("visible");
+}
+
+function drawCard(){
+  if(!deck.length||drawing)return;
+  drawing=true;started=true;
+  let inner=$("cardInner");inner.classList.remove("flipped");flipped=false;
+  let c=$("cardContainer");c.classList.remove("card-in");
+  setTimeout(()=>{
+    cardIdx=deck.pop();drawnCount++;updateQ();applyTheme();ti++;
+    c.classList.add("card-in");drawing=false;updateUI();
+    if(navigator.vibrate)navigator.vibrate(15);
+  },80);
+}
+
+function flipCard(){
+  if(cardIdx===null||flipped)return;
+  $("cardInner").classList.add("flipped");flipped=true;
+  if(navigator.vibrate)navigator.vibrate(10);
+  updateUI();
+}
+
+function nextCard(){
+  if(deck.length>0)drawCard();
+}
+
+function handleCardTap(){
+  if(!flipped){flipCard()}
+  else{nextCard()}
+}
+
+function resetDeck(){
+  let n=DATA.en.questions.length;
+  deck=shuffle([...Array(n).keys()]);deckSize=deck.length;
+  ti=0;flipped=false;cardIdx=null;drawing=false;started=false;drawnCount=0;
+  $("cardInner").classList.remove("flipped");
+  $("cardContainer").classList.remove("card-in");
+  updateQ();updateUI();showToast(DATA[lang].toastReset);
+}
+
+function shuffleRemaining(){
+  if(deck.length > 1){
+    deck=shuffle(deck);
+    showToast(DATA[lang].toastShuffle);
+  } else {
+    showToast(DATA[lang].toastNoShuffle);
+  }
+}
+
+$("deckTop").addEventListener("click",drawCard);
+$("drawBtn").addEventListener("click",()=>{if(!started)drawCard();else if(flipped)nextCard();else if(!flipped&&cardIdx!==null)flipCard();else drawCard()});
+$("cardInner").addEventListener("click",handleCardTap);
+$("resetBtn").addEventListener("click",resetDeck);
+$("shuffleBtn").addEventListener("click",shuffleRemaining);
+$("langBtn").addEventListener("click",()=>{lang=lang==="en"?"pl":"en";setTexts();updateQ();updateUI()});
+
+let ca=$("cardArea");
+ca.addEventListener("touchstart",e=>{tsy=e.touches[0].clientY;tsx=e.touches[0].clientX},{passive:true});
+ca.addEventListener("touchend",e=>{
+  let dy=tsy-e.changedTouches[0].clientY,dx=Math.abs(tsx-e.changedTouches[0].clientX);
+  if(dy>60&&dy>dx){if(flipped)nextCard();else if(cardIdx!==null)flipCard()}
+},{passive:true});
+
+setTexts();resetDeck();
+</script>
+</body>
+</html>
