@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>BeeHonest</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="shortcut icon" href="favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="BeeHonest" />
+<meta name="theme-color" content="#1a1a2e" />
+<link rel="manifest" href="site.webmanifest" />
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  background:#FFF8F0;
+  min-height:100vh;min-height:100dvh;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;-webkit-user-select:none;
+}
+
+.app{
+  display:flex;flex-direction:column;
+  height:100vh;height:100dvh;
+  max-width:440px;margin:0 auto;
+  padding:calc(16px + var(--safe-top)) 20px calc(16px + var(--safe-bottom));
+}
+
+/* ── Room Screen ── */
+#roomScreen{
+  display:flex;flex-direction:column;
+  height:100vh;height:100dvh;
+  max-width:440px;margin:0 auto;
+  padding:calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
+  justify-content:center;gap:0;
+}
+.room-logo{
+  text-align:center;margin-bottom:32px;
+}
+.room-logo h1{font-size:2rem;font-weight:900;color:#1a1a2e;letter-spacing:-.02em}
+.room-logo p{font-size:13px;color:#aaa;font-weight:700;margin-top:3px}
+
+.room-card{
+  background:#fff;border:3px solid #1a1a2e;border-radius:24px;
+  padding:24px;box-shadow:6px 6px 0 #1a1a2e;margin-bottom:16px;
+}
+.room-card h2{font-size:14px;font-weight:900;color:#1a1a2e;text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+
+.room-input{
+  width:100%;padding:14px 16px;font-size:18px;font-weight:800;
+  border:3px solid #1a1a2e;border-radius:14px;background:#FFF8F0;
+  font-family:inherit;color:#1a1a2e;outline:none;
+  text-transform:uppercase;letter-spacing:.12em;text-align:center;
+  transition:box-shadow .15s;
+}
+.room-input:focus{box-shadow:4px 4px 0 #1a1a2e}
+.room-input::placeholder{text-transform:none;letter-spacing:0;color:#ccc;font-size:14px}
+
+.room-btn{
+  width:100%;padding:16px;font-size:18px;font-weight:800;
+  border:3px solid #1a1a2e;border-radius:16px;cursor:pointer;
+  font-family:'Nunito',system-ui,sans-serif;transition:transform .12s,box-shadow .12s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:12px;
+}
+.room-btn:active{transform:scale(.95) translateY(2px);box-shadow:2px 2px 0 #1a1a2e !important}
+.room-btn-primary{background:#FF6B6B;color:#fff;box-shadow:4px 4px 0 #1a1a2e}
+.room-btn-secondary{background:#fff;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e}
+.room-btn:disabled{opacity:.4;pointer-events:none}
+
+.room-divider{
+  display:flex;align-items:center;gap:10px;margin:4px 0;
+}
+.room-divider span{font-size:11px;font-weight:800;color:#ccc;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+.room-divider::before,.room-divider::after{content:'';flex:1;height:2px;background:#eee;border-radius:2px}
+
+.room-error{
+  font-size:12px;font-weight:800;color:#FF6B6B;text-align:center;
+  margin-top:8px;min-height:18px;
+}
+
+/* ── Lobby screen ── */
+#lobbyScreen{
+  display:flex;flex-direction:column;
+  height:100vh;height:100dvh;
+  max-width:440px;margin:0 auto;
+  padding:calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
+  justify-content:center;gap:0;
+}
+.lobby-card{
+  background:#4D96FF;border:3px solid #1a1a2e;border-radius:24px;
+  padding:28px 24px;box-shadow:6px 6px 0 #1a1a2e;text-align:center;
+  margin-bottom:16px;
+}
+.lobby-label{font-size:11px;font-weight:900;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.lobby-code{font-size:3rem;font-weight:900;color:#fff;letter-spacing:.15em;line-height:1;margin-bottom:8px}
+.lobby-sub{font-size:13px;font-weight:700;color:rgba(255,255,255,.8)}
+.lobby-players{
+  background:#fff;border:3px solid #1a1a2e;border-radius:20px;
+  padding:20px;box-shadow:4px 4px 0 #1a1a2e;margin-bottom:16px;
+}
+.lobby-players h3{font-size:12px;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.player-list{display:flex;flex-direction:column;gap:8px}
+.player-item{
+  display:flex;align-items:center;gap:10px;
+  font-size:14px;font-weight:800;color:#1a1a2e;
+}
+.player-dot{width:10px;height:10px;border-radius:50%;background:#6BCB77;border:2px solid #1a1a2e;flex-shrink:0}
+.player-dot.host{background:#FFD93D}
+.lobby-hint{font-size:12px;font-weight:700;color:#bbb;text-align:center;margin-bottom:12px}
+
+/* ── Room pill (in-game) ── */
+.room-pill{
+  display:flex;align-items:center;gap:6px;
+  background:#fff;border:2.5px solid #1a1a2e;border-radius:12px;
+  padding:5px 10px;font-size:11px;font-weight:900;color:#1a1a2e;
+  letter-spacing:.06em;cursor:pointer;transition:transform .12s;
+}
+.room-pill:active{transform:scale(.93)}
+.room-pill-dot{width:7px;height:7px;border-radius:50%;background:#6BCB77;border:1.5px solid #1a1a2e;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-bottom:8px}
+.header-left{display:flex;flex-direction:column}
+.header h1{font-size:1.3rem;font-weight:900;color:#1a1a2e;letter-spacing:-.01em}
+.header p{font-size:12px;color:#999;font-weight:700;margin-top:1px}
+.header-right{display:flex;align-items:center;gap:8px}
+.lang-btn{
+  display:flex;align-items:center;gap:5px;
+  background:#fff;border:3px solid #1a1a2e;color:#1a1a2e;
+  border-radius:14px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;
+  font-family:inherit;transition:transform .15s;
+}
+.lang-btn:active{transform:scale(.93)}
+.lang-btn svg{width:15px;height:15px}
+
+/* Progress */
+.progress-section{flex-shrink:0;padding-bottom:14px}
+.progress-meta{display:flex;justify-content:space-between;margin-bottom:6px}
+.progress-meta span{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#aaa}
+.progress-track{width:100%;height:10px;border-radius:99px;background:#fff;border:3px solid #1a1a2e;overflow:hidden}
+.progress-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#FF6B6B,#FFD93D,#6BCB77,#4D96FF);background-size:300% 100%;animation:barShift 4s linear infinite;transition:width .5s cubic-bezier(.4,0,.2,1)}
+@keyframes barShift{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+
+/* Card Area */
+.card-area{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;padding:4px 0}
+
+/* Deck View */
+.deck-view{display:flex;flex-direction:column;align-items:center;gap:20px;width:100%}
+.deck-stack{position:relative;width:min(100%, 330px, calc((100dvh - 210px - var(--safe-top) - var(--safe-bottom)) * 3 / 4.2));aspect-ratio:3/4.2;cursor:pointer}
+.deck-ghost{position:absolute;inset:0;border-radius:24px;border:3.5px solid #1a1a2e}
+.deck-ghost:nth-child(1){background:#FFD93D}
+.deck-ghost:nth-child(2){background:#6BCB77}
+.deck-top-wrap{
+  position:absolute;inset:0;z-index:3;border-radius:24px;
+  background:#4D96FF;border:3.5px solid #1a1a2e;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  transition:transform .15s;
+  box-shadow:6px 6px 0 #1a1a2e;
+}
+.deck-top-wrap:active{transform:scale(.96);box-shadow:3px 3px 0 #1a1a2e}
+.deck-top-wrap.empty{opacity:.3;pointer-events:none}
+.deck-icon{
+  width:60px;height:60px;display:flex;align-items:center;justify-content:center;
+  border-radius:18px;background:#fff;border:3px solid #1a1a2e;
+  box-shadow:3px 3px 0 #1a1a2e;color:#1a1a2e;
+}
+.deck-label{font-size:15px;font-weight:800;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.15)}
+.deck-sublabel{font-size:12px;font-weight:700;color:rgba(255,255,255,.7)}
+.deck-bounce{animation:bounce 2.5s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+
+/* Card */
+.card-container{
+  width:min(100%, 330px, calc((100dvh - 210px - var(--safe-top) - var(--safe-bottom)) * 3 / 4.2));aspect-ratio:3/4.2;
+  perspective:1200px;cursor:pointer;position:relative;
+}
+.card-inner{
+  width:100%;height:100%;position:relative;
+  transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.4,0,.15,1);
+}
+.card-inner.flipped{transform:rotateY(180deg)}
+
+.card-face{
+  position:absolute;inset:0;width:100%;height:100%;
+  border-radius:26px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 28px;overflow:hidden;
+  border:3.5px solid #1a1a2e;
+}
+.card-front{background:#fff;box-shadow:6px 6px 0 #1a1a2e}
+.front-icon{
+  width:56px;height:56px;display:flex;align-items:center;justify-content:center;
+  border-radius:16px;background:rgba(0,0,0,.04);border:3px solid #1a1a2e;
+  box-shadow:3px 3px 0 #1a1a2e;margin-bottom:14px;color:#1a1a2e;
+}
+.front-hint{font-size:16px;font-weight:800;color:#1a1a2e}
+.front-sub{font-size:12px;color:#aaa;font-weight:700;margin-top:2px}
+.card-corner{position:absolute;font-size:20px;font-weight:900;color:#1a1a2e;opacity:.08}
+.card-corner.tl{top:16px;left:18px}
+.card-corner.br{bottom:16px;right:18px;transform:rotate(180deg)}
+.card-back{
+  transform:rotateY(180deg);
+  box-shadow:-6px 6px 0 #1a1a2e;
+  position:relative;
+}
+.t0 .card-back,.t0 .card-front{background:#FFF0F0}
+.t1 .card-back,.t1 .card-front{background:#FFFBEB}
+.t2 .card-back,.t2 .card-front{background:#F0FFF4}
+.t3 .card-back,.t3 .card-front{background:#EFF6FF}
+.t4 .card-back,.t4 .card-front{background:#FDF4FF}
+.t5 .card-back,.t5 .card-front{background:#FFF7ED}
+.print-area{width:100%;max-width:260px;position:relative}
+.q-text{font-size:1.1rem;font-weight:800;text-align:center;line-height:1.6;color:#1a1a2e}
+.swipe-hint{
+  position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+  color:#bbb;opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.swipe-hint.visible{opacity:1}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.empty-icon{
+  width:56px;height:56px;display:flex;align-items:center;justify-content:center;
+  border-radius:16px;background:#fff;border:3px solid #1a1a2e;
+  box-shadow:3px 3px 0 #1a1a2e;color:#1a1a2e;
+}
+.empty-title{font-size:17px;font-weight:900;color:#1a1a2e}
+.empty-sub{font-size:13px;color:#999;font-weight:700}
+
+/* Actions */
+.actions{flex-shrink:0;padding-top:14px;display:flex;gap:10px}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 20px;font-size:18px;font-weight:800;
+  border-radius:16px;border:3px solid #1a1a2e;cursor:pointer;
+  font-family:'Nunito',system-ui,sans-serif;transition:transform .12s,box-shadow .12s;min-height:54px;
+}
+.btn:active{transform:scale(.95) translateY(2px);box-shadow:2px 2px 0 #1a1a2e !important}
+.btn-primary{flex:1;color:#fff;background:#FF6B6B;box-shadow:4px 4px 0 #1a1a2e}
+.btn-primary:disabled{opacity:.3;pointer-events:none}
+.btn-secondary{background:#fff;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e;padding:14px 18px}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:calc(100px + var(--safe-bottom));left:50%;
+  transform:translateX(-50%) translateY(12px);
+  background:#1a1a2e;color:#fff;
+  padding:10px 24px;border-radius:99px;border:3px solid #1a1a2e;
+  font-size:13px;font-weight:800;opacity:0;pointer-events:none;
+  transition:opacity .25s,transform .25s;z-index:100;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@keyframes cardIn{from{opacity:0;transform:translateY(30px) rotate(-3deg) scale(.9)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
+.card-in{animation:cardIn .4s cubic-bezier(.3,0,.2,1.2)}
+
+/* Offline badge */
+.offline-badge{
+  display:none;
+  position:fixed;top:calc(8px + var(--safe-top));right:16px;
+  background:#FF6B6B;color:#fff;border:2px solid #1a1a2e;
+  border-radius:99px;padding:4px 10px;font-size:10px;font-weight:900;
+  letter-spacing:.06em;text-transform:uppercase;z-index:200;
+}
+.offline-badge.show{display:block}
+
+/* Copy code tooltip */
+.copied-tip{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);
+  background:#1a1a2e;color:#fff;padding:14px 28px;border-radius:20px;
+  font-size:20px;font-weight:900;letter-spacing:.15em;
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:300;
+}
+.copied-tip.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* ── Hive Modal (bottom sheet) ── */
+.hive-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.hive-overlay.open{opacity:1;pointer-events:all}
+.hive-sheet{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(calc(100% + 8px));
+  width:100%;max-width:440px;
+  background:#FFF8F0;border-radius:28px 28px 0 0;
+  border:3px solid #1a1a2e;border-bottom:none;
+  padding:20px 24px calc(28px + var(--safe-bottom));
+  box-shadow:0 -6px 0 #1a1a2e;
+  z-index:401;transition:transform .35s cubic-bezier(.3,0,.2,1.1);
+}
+.hive-sheet.open{transform:translateX(-50%) translateY(0)}
+.hive-handle{width:40px;height:5px;border-radius:3px;background:#ddd;margin:0 auto 20px}
+.hive-title{font-size:16px;font-weight:900;color:#1a1a2e;margin-bottom:16px;text-align:center}
+.hive-or{display:flex;align-items:center;gap:10px;margin:8px 0}
+.hive-or span{font-size:11px;font-weight:800;color:#ccc;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+.hive-or::before,.hive-or::after{content:'';flex:1;height:2px;background:#eee;border-radius:2px}
+.hive-input{
+  width:100%;padding:14px 16px;font-size:20px;font-weight:900;
+  border:3px solid #1a1a2e;border-radius:14px;background:#fff;
+  font-family:inherit;color:#1a1a2e;outline:none;
+  text-transform:uppercase;letter-spacing:.15em;text-align:center;
+  transition:box-shadow .15s;margin-bottom:4px;
+}
+.hive-input:focus{box-shadow:4px 4px 0 #1a1a2e}
+.hive-input::placeholder{text-transform:none;letter-spacing:0;color:#ccc;font-size:14px;font-weight:700}
+.hive-error{font-size:12px;font-weight:800;color:#FF6B6B;text-align:center;min-height:18px;margin-bottom:6px}
+.hive-btn{
+  width:100%;padding:16px;font-size:18px;font-weight:800;
+  border:3px solid #1a1a2e;border-radius:16px;cursor:pointer;
+  font-family:'Nunito',system-ui,sans-serif;transition:transform .12s,box-shadow .12s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:8px;
+}
+.hive-btn:active{transform:scale(.95) translateY(2px);box-shadow:2px 2px 0 #1a1a2e !important}
+.hive-btn:disabled{opacity:.4;pointer-events:none}
+.hive-btn-yellow{background:#FFD93D;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e}
+.hive-btn-white{background:#fff;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e}
+/* room pill active state */
+.room-pill.active .room-pill-dot{background:#FFD93D}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════ ROOM SCREEN ══════════ -->
+<div id="roomScreen">
+  <div class="room-logo">
+    <h1>🐝 BeeHonest</h1>
+    <p id="rs-subtitle">Play together · Real-time sync</p>
+  </div>
+
+  <div class="room-card">
+    <h2 id="rs-create-label">Create a room</h2>
+    <button type="button" class="room-btn room-btn-primary" id="createBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      <span id="rs-create-btn">New room</span>
+    </button>
+  </div>
+
+  <div class="room-divider"><span id="rs-or">or</span></div>
+
+  <div class="room-card">
+    <h2 id="rs-join-label">Join a room</h2>
+    <input type="text" class="room-input" id="codeInput" maxlength="6" placeholder="Room code…" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button type="button" class="room-btn room-btn-secondary" id="joinBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      <span id="rs-join-btn">Join room</span>
+    </button>
+    <div class="room-error" id="joinError"></div>
+  </div>
+
+  <button type="button" class="room-btn room-btn-secondary" id="soloBtn" style="margin-top:4px;border-color:#ddd;box-shadow:none;color:#aaa">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7 7 0 0 1 13 0"/></svg>
+    <span id="rs-solo-btn">Play solo (no sync)</span>
+  </button>
+</div>
+
+<!-- ══════════ LOBBY SCREEN ══════════ -->
+<div id="lobbyScreen" style="display:none">
+  <div class="lobby-card">
+    <div class="lobby-label" id="lb-label">Room code — share with friends</div>
+    <div class="lobby-code" id="lobbyCode">----</div>
+    <div class="lobby-sub" id="lb-sub">Tap code to copy</div>
+  </div>
+
+  <div class="lobby-players">
+    <h3 id="lb-players-label">Players online</h3>
+    <div class="player-list" id="playerList"></div>
+  </div>
+
+  <div class="lobby-hint" id="lb-hint">Waiting for others… Host starts the game.</div>
+
+  <button type="button" class="room-btn room-btn-primary" id="startBtn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    <span id="lb-start-btn">Start game</span>
+  </button>
+  <button type="button" class="room-btn room-btn-secondary" id="leaveBtn" style="margin-top:8px">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    <span id="lb-leave-btn">Leave room</span>
+  </button>
+</div>
+
+<!-- ══════════ GAME SCREEN ══════════ -->
+<div class="app" id="gameScreen" style="display:none">
+  <div class="header">
+    <div class="header-left">
+      <h1 id="title">BeeHonest</h1>
+      <p id="subtitle">Draw · Flip · Connect</p>
+    </div>
+    <div class="header-right">
+      <div class="room-pill" id="roomPill" title="Tap to copy room code">
+        <div class="room-pill-dot"></div>
+        <span id="pillCode">----</span>
+      </div>
+      <button type="button" class="lang-btn" id="langBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+        <span id="langLabel">PL</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-meta">
+      <span id="progressCount"></span>
+      <span id="progressRemaining"></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="card-area" id="cardArea">
+    <div class="deck-view" id="deckView">
+      <div class="deck-stack" id="deckTop">
+        <div class="deck-ghost" style="transform:rotate(-7deg) translateY(10px)"></div>
+        <div class="deck-ghost" style="transform:rotate(-3.5deg) translateY(5px)"></div>
+        <div class="deck-top-wrap deck-bounce">
+          <div class="deck-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          </div>
+          <span class="deck-label" id="deckLabel">Tap to draw</span>
+          <span class="deck-sublabel" id="deckSublabel"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-container" id="cardContainer" style="display:none">
+      <div class="card-inner" id="cardInner">
+        <div class="card-face card-front">
+          <span class="card-corner tl">✦</span>
+          <span class="card-corner br">✦</span>
+          <div class="front-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+          </div>
+          <p class="front-hint" id="flipHint">Tap to reveal</p>
+          <p class="front-sub" id="flipSub">or swipe up</p>
+        </div>
+        <div class="card-face card-back">
+          <div class="print-area">
+            <p class="q-text" id="questionText"></p>
+          </div>
+        </div>
+      </div>
+      <div class="swipe-hint" id="swipeHint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l7-7 7 7"/></svg>
+        <span id="swipeLabel">Swipe up for next</span>
+      </div>
+    </div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+      </div>
+      <p class="empty-title" id="emptyTitle">All cards drawn!</p>
+      <p class="empty-sub" id="emptySub">Reset the deck to start again.</p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn btn-secondary" id="resetBtn" title="Reset Deck">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+    </button>
+    <button type="button" class="btn btn-secondary" id="shuffleBtn" title="Shuffle Remaining">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+    </button>
+    <button type="button" class="btn btn-primary" id="hiveBtn">
+      <span id="hiveLabel">Join a hive</span>
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="offline-badge" id="offlineBadge">OFFLINE</div>
+<div class="copied-tip" id="copiedTip"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getDatabase, ref, set, get, onValue, off,
+  remove, onDisconnect, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+// ══════════════════════════════════════════════
+//  🔧 PASTE YOUR FIREBASE CONFIG HERE
+//  1. Go to console.firebase.google.com
+//  2. Create project → Add web app
+//  3. Enable Realtime Database (test mode is fine)
+//  4. Copy firebaseConfig and replace below
+// ══════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyDFakUDOpPtn0SJpfGBWbWewJnCpLPrw_4",
+  authDomain:        "beehonest-game.firebaseapp.com",
+  databaseURL:       "https://beehonest-game-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "beehonest-game",
+  storageBucket:     "beehonest-game.firebasestorage.app",
+  messagingSenderId: "192014316868",
+  appId:             "1:192014316868:web:79fc193a00727153179311"
+};
+
+// ── Firebase init ──────────────────────────────
+let db = null;
+let firebaseOk = false;
+
+try {
+  const fbApp = initializeApp(firebaseConfig);
+  db = getDatabase(fbApp);
+  firebaseOk = true;
+  console.log("✅ Firebase connected");
+} catch(e) {
+  console.error("❌ Firebase init failed:", e);
+}
+
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const THEMES=['t0','t1','t2','t3','t4','t5'];
+
+const DATA={
+  en:{
+    title:"BeeHonest",subtitle:"Draw · Flip · Talk",
+    deckLabel:"Tap to draw",flipHint:"Tap to reveal",flipSub:"or swipe up",
+    swipeLabel:"Swipe up for next",hiveBtn:"Join a hive",hiveTitle:"🐝 Join a Hive",hiveCreate:"New hive",hiveJoin:"Join hive",hiveOr:"or",
+    drawn:(n,t)=>`${n} of ${t} drawn`,left:n=>`${n} remaining`,
+    langLabel:"PL",emptyTitle:"All cards drawn!",emptySub:"Reset the deck to start again.",
+    toastReset:"Deck reset",toastShuffle:"Cards shuffled",toastNoShuffle:"Not enough cards",
+    toastCopied:"Code copied!",toastOffline:"You're offline",toastReconnect:"Back online!",
+    roomCreated:"Room created",roomJoined:"Joined room",roomLeft:"Left room",
+    rsSubtitle:"Play together · Real-time sync",
+    rsCreateLabel:"Create a room",rsCreateBtn:"New room",
+    rsJoinLabel:"Join a room",rsJoinBtn:"Join room",
+    rsSoloBtn:"Play solo (no sync)",rsOr:"or",
+    lbLabel:"Room code — share with friends",lbSub:"Tap code to copy",
+    lbPlayersLabel:"Players online",lbHint:"Waiting for others… Host starts the game.",
+    lbStartBtn:"Start game",lbLeaveBtn:"Leave room",
+    errNotFound:"Room not found",errFirebase:"Firebase not configured — playing solo",
+    questions:[
+      "What color are aliens?",
+      "Would you like to go back in time or go to the future?",
+      "Who did you want to be when you were a teenager?",
+      "What is the best piece of advice you've ever received?",
+      "What was the worst job you ever had?",
+      "What is one thing we don't know about you?",
+      "If you could live anywhere in the world for a year, where would it be?",
+      "Would you rather be the funniest or smartest person in the room?",
+      "Would you rather visit a volcano or a rainforest?",
+      "Describe your dream holiday if money was no limit.",
+      "When you were a child, what was your biggest dream?",
+      "What talent would you most like to grow and develop?",
+      "What activities do you dream of trying someday?",
+      "How do you like to dress (smart, relaxed, sweatpants and flip-flops)?",
+      "You have one extra hour a day, you can do anything, what would you do?",
+      "What \u201Cold person\u201D things do you do?",
+      "If you could speak another language, what would it be?",
+      "Do you have a bucket list? Name one thing on your bucket list.",
+      "What is something new or interesting that you've learned recently?",
+      "Is there any topic lately that you would like to be mentored on?",
+      "If you were reincarnated as an animal, what would you choose and why?",
+      "When was the last time you did something for the first time?",
+      "Have you ever experienced a culture shock? Where was it and what happened?",
+      "Have you learned any useful productivity hacks recently?",
+      "What's an adventurous thing you've done or want to do?",
+      "Which do you prefer, oceans or mountains? Why?",
+      "What scientific discoveries would you like to live to see?",
+      "Would your younger self be proud of who you are today?",
+      "If you could give a piece of advice to your younger self, what would it be?",
+      "What you as a kid would tell yourself now?",
+      "If you could go back in time and learn one thing, what would it be?",
+      "What were your happiest moments?",
+      "What is one work-related skill you would like to develop, particularly if it could be done easily?",
+      "What new, or additional, skill do you think you need now to progress further?",
+      "What do you admire most in a work colleague?",
+      "Describe yourself in one word.",
+      "What is the worst piece of advice you've ever received, and why was it so bad?",
+      "What is one productivity tool you couldn't live without, and why is it indispensable?",
+      "What is one trait you don't like the most in yourself?",
+      "What is your greatest fear?",
+      "Which talent would you most like to have?",
+      "What do you consider your greatest achievement?",
+      "What is your greatest extravagance?",
+      "What do you dislike most about your appearance?",
+      "What is your most treasured possession?",
+      "What do you most value in your friends?",
+      "What is it that you most dislike?",
+      "Who are your heroes in real life?",
+      "What is your favorite journey?",
+      "How would you like to die?",
+      "Share one boring or trivial fact about yourself.",
+      "What movie are we in now, or what movie do you play in?"
+    ]
+  },
+  pl:{
+    title:"BeeHonest",subtitle:"Dobierz · Odwróć · Porozmawiaj",
+    deckLabel:"Dotknij, aby dobrać",flipHint:"Dotknij, aby odkryć",flipSub:"lub przesuń w górę",
+    swipeLabel:"Przesuń w górę",hiveBtn:"Dołącz do ula",hiveTitle:"🐝 Dołącz do ula",hiveCreate:"Nowy ul",hiveJoin:"Dołącz",hiveOr:"lub",
+    drawn:(n,t)=>`${n} z ${t} dobranych`,left:n=>`${n} pozostało`,
+    langLabel:"EN",emptyTitle:"Wszystkie karty dobrane!",emptySub:"Zresetuj, aby zacząć od nowa.",
+    toastReset:"Talia zresetowana",toastShuffle:"Karty przetasowane",toastNoShuffle:"Za mało kart",
+    toastCopied:"Kod skopiowany!",toastOffline:"Brak połączenia",toastReconnect:"Połączono!",
+    roomCreated:"Pokój utworzony",roomJoined:"Dołączono do pokoju",roomLeft:"Opuszczono pokój",
+    rsSubtitle:"Grajcie razem · Synchronizacja",
+    rsCreateLabel:"Utwórz pokój",rsCreateBtn:"Nowy pokój",
+    rsJoinLabel:"Dołącz do pokoju",rsJoinBtn:"Dołącz",
+    rsSoloBtn:"Graj solo (bez synchronizacji)",rsOr:"lub",
+    lbLabel:"Kod pokoju — udostępnij znajomym",lbSub:"Dotknij kod, aby skopiować",
+    lbPlayersLabel:"Gracze online",lbHint:"Czekam na innych… Host startuje grę.",
+    lbStartBtn:"Rozpocznij grę",lbLeaveBtn:"Opuść pokój",
+    errNotFound:"Nie znaleziono pokoju",errFirebase:"Firebase nie skonfigurowany — tryb solo",
+    questions:[
+      "Jakiego koloru są kosmici?",
+      "Wolałbyś/wolałabyś cofnąć się w czasie czy przenieść do przyszłości?",
+      "Kim chciałeś/chciałaś zostać, gdy byłeś/byłaś nastolatkiem?",
+      "Jaka jest najlepsza rada, jaką kiedykolwiek otrzymałeś/aś?",
+      "Jaka była najgorsza praca, jaką kiedykolwiek miałeś/aś?",
+      "Jakiej jednej rzeczy o tobie nie wiemy?",
+      "Gdybyś mógł/mogła mieszkać przez rok w dowolnym miejscu na świecie, gdzie by to było?",
+      "Wolałbyś/wolałabyś być najzabawniejszą czy najmądrzejszą osobą w pokoju?",
+      "Wolałbyś/wolałabyś odwiedzić wulkan czy las deszczowy?",
+      "Opisz swoje wymarzone wakacje, gdyby pieniądze nie grały roli.",
+      "Kiedy byłeś/aś dzieckiem, jakie było twoje największe marzenie?",
+      "Jaki talent najbardziej chciałbyś/chciałabyś rozwijać?",
+      "Czego (jakiej aktywności) chciałbyś/chciałabyś kiedyś spróbować?",
+      "Jak lubisz się ubierać (elegancko, na luzie, dres i klapki)?",
+      "Masz jedną dodatkową godzinę dziennie, możesz robić co chcesz, co by to było?",
+      "Jakie \"rzeczy dla starszych ludzi\" robisz?",
+      "Gdybyś mógł/mogła mówić w innym języku, jaki by to był język?",
+      "Czy masz listę rzeczy do zrobienia przed śmiercią (bucket list)? Wymień jedną rzecz z tej listy.",
+      "Czego nowego lub ciekawego ostatnio się nauczyłeś/aś?",
+      "Czy jest ostatnio jakiś temat, z którego chciałbyś/chciałabyś mieć mentora?",
+      "Jako jakie zwierzę chciałbyś/chciałabyś się odrodzić po reinkarnacji?",
+      "Kiedy ostatni raz zrobiłeś/aś coś po raz pierwszy?",
+      "Czy kiedykolwiek przeżyłeś/aś szok kulturowy? Gdzie to było i co się stało?",
+      "Czy poznałeś/aś ostatnio jakieś przydatne triki na produktywność?",
+      "Jaką najodważniejszą/najbardziej ryzykowną rzecz zrobiłeś/aś lub chcesz zrobić?",
+      "Co wolisz, oceany czy góry? Dlaczego?",
+      "Jakich odkryć naukowych chciałbyś/chciałabyś dożyć?",
+      "Czy twoje młodsze \u201Eja\u201D byłoby dumne z tego, kim jesteś dzisiaj?",
+      "Gdybyś mógł/mogła dać radę swojemu młodszemu \"ja\", co by to było?",
+      "Co jako dziecko powiedziałbyś/powiedziałabyś sobie teraz?",
+      "Gdybyś mógł/mogła cofnąć się w czasie i nauczyć jednej rzeczy, co by to było?",
+      "Jakie były twoje najszczęśliwsze chwile?",
+      "Jaką jedną umiejętność związaną z pracą chciałbyś/chciałabyś rozwinąć, zwłaszcza gdyby to było łatwe?",
+      "Jakiej nowej lub dodatkowej umiejętności uważasz, że potrzebujesz teraz, aby pójść dalej?",
+      "Co najbardziej podziwiasz u współpracownika?",
+      "Opisz siebie jednym słowem.",
+      "Jaka jest najgorsza rada, jaką kiedykolwiek otrzymałeś/aś, i dlaczego była taka zła?",
+      "Jakie jest jedno narzędzie do produktywności, bez którego nie mógłbyś/mogłabyś żyć i dlaczego jest niezbędne?",
+      "Jakiej jednej cechy najbardziej w sobie nie lubisz?",
+      "Czego najbardziej się boisz?",
+      "Jaki talent najbardziej chciałbyś/chciałabyś mieć?",
+      "Co uważasz za swoje największe osiągnięcie?",
+      "Jaka jest twoja największa ekstrawagancja?",
+      "Czego najbardziej nie lubisz w swoim wyglądzie?",
+      "Jaka jest twoja najcenniejsza rzecz?",
+      "Co najbardziej cenisz w swoich przyjaciołach?",
+      "Czego najbardziej nie lubisz?",
+      "Kto jest twoim bohaterem w prawdziwym życiu?",
+      "Jaka jest twoja ulubiona podróż?",
+      "Jak chciałbyś/chciałabyś umrzeć?",
+      "Podziel się jednym nudnym lub trywialnym faktem o sobie.",
+      "W jakim filmie teraz jesteśmy lub w jakim filmie grasz?"
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let lang="en", deck=[], deckSize=0, ti=0, flipped=false, cardIdx=null, drawing=false, started=false, drawnCount=0, toastT=null;
+let tsy=0, tsx=0;
+let roomCode=null, myPlayerId=null, isHost=false, isSolo=false;
+let stateRef=null, presenceRef=null;
+let playersListener=null;
+
+const $=id=>document.getElementById(id);
+
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function showToast(m){
+  let t=$("toast");t.textContent=m;t.classList.add("show");
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),1800);
+}
+
+function showCopied(code){
+  let t=$("copiedTip");t.textContent=code;t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),1200);
+}
+
+function copyCode(code){
+  navigator.clipboard?.writeText(code).catch(()=>{});
+  showToast(DATA[lang].toastCopied);
+  showCopied(code);
+}
+
+function genCode(){
+  const words=["BEE","FOX","CAT","DOG","OWL","APE","ELK","GNU","YAK","EMU"];
+  const w=words[Math.floor(Math.random()*words.length)];
+  const n=String(Math.floor(Math.random()*900)+100);
+  return w+n;
+}
+
+function setTexts(){
+  const d=DATA[lang];
+  $("title").textContent=d.title;$("subtitle").textContent=d.subtitle;
+  $("deckLabel").textContent=d.deckLabel;$("flipHint").textContent=d.flipHint;
+  $("flipSub").textContent=d.flipSub;$("swipeLabel").textContent=d.swipeLabel;
+  $("hiveLabel").textContent=d.hiveBtn;$("langLabel").textContent=d.langLabel;
+  $("emptyTitle").textContent=d.emptyTitle;$("emptySub").textContent=d.emptySub;
+  $("hive-title").textContent=d.hiveTitle;
+  $("hive-create-label").textContent=d.hiveCreate;
+  $("hive-join-label").textContent=d.hiveJoin;
+  $("hive-or").textContent=d.hiveOr;
+  // room screen
+  $("rs-subtitle").textContent=d.rsSubtitle;
+  $("rs-create-label").textContent=d.rsCreateLabel;$("rs-create-btn").textContent=d.rsCreateBtn;
+  $("rs-join-label").textContent=d.rsJoinLabel;$("rs-join-btn").textContent=d.rsJoinBtn;
+  $("rs-solo-btn").textContent=d.rsSoloBtn;$("rs-or").textContent=d.rsOr;
+  // lobby
+  $("lb-label").textContent=d.lbLabel;$("lb-sub").textContent=d.lbSub;
+  $("lb-players-label").textContent=d.lbPlayersLabel;$("lb-hint").textContent=d.lbHint;
+  $("lb-start-btn").textContent=d.lbStartBtn;$("lb-leave-btn").textContent=d.lbLeaveBtn;
+}
+
+function applyTheme(){
+  let c=$("cardContainer");
+  THEMES.forEach(t=>c.classList.remove(t));
+  c.classList.add(THEMES[ti%THEMES.length]);
+}
+
+function updateQ(){$("questionText").textContent=cardIdx!==null?DATA[lang].questions[cardIdx]:""}
+
+function updateUI(){
+  const d=DATA[lang], rem=deck.length, drawn=deckSize-rem, pct=deckSize>0?(drawn/deckSize)*100:0;
+  $("progressFill").style.width=pct+"%";
+  $("progressCount").textContent=d.drawn(drawn,deckSize);
+  $("progressRemaining").textContent=d.left(rem);
+  $("deckSublabel").textContent=d.left(rem);
+  $("hiveBtn").disabled=rem===0;
+  if(rem===0&&started){
+    $("deckView").style.display="none";$("cardContainer").style.display="none";$("emptyState").style.display="flex";
+  } else if(started){
+    $("deckView").style.display="none";$("cardContainer").style.display="block";$("emptyState").style.display="none";
+  } else {
+    $("deckView").style.display="flex";$("cardContainer").style.display="none";$("emptyState").style.display="none";
+  }
+  let h=$("swipeHint");flipped&&rem>0?h.classList.add("visible"):h.classList.remove("visible");
+}
+
+// ══════════════════════════════════════════════
+//  GAME LOGIC
+// ══════════════════════════════════════════════
+function buildDeck(){
+  const n=Math.max(DATA.en.questions.length,DATA.pl.questions.length);
+  return shuffle([...Array(n).keys()]);
+}
+
+// Apply state to UI (called by onValue listener for everyone)
+function applyGameState(state){
+  const prevCardIdx = cardIdx;
+  deck=state.deck||[];
+  deckSize=state.deckSize||deck.length;
+  cardIdx=state.cardIdx??null;
+  flipped=state.flipped||false;
+  started=state.started||false;
+  drawnCount=state.drawnCount||0;
+  ti=state.ti||0;
+  drawing=false; // always unlock after remote state arrives
+
+  // Handle flip animation
+  if(flipped){
+    $('cardInner').classList.add('flipped');
+  } else {
+    $('cardInner').classList.remove('flipped');
+  }
+
+  // Handle card-in animation: trigger whenever a new card appears
+  if(started && cardIdx!==null){
+    if(cardIdx !== prevCardIdx){
+      // New card drawn — re-trigger animation
+      const ci=$('cardContainer');
+      ci.classList.remove('card-in');
+      // Force reflow so the animation re-fires
+      void ci.offsetWidth;
+      ci.classList.add('card-in');
+    }
+  }
+
+  updateQ();applyTheme();updateUI();
+}
+
+// Push local state to Firebase (solo: apply directly)
+async function pushState(newState){
+  if(isSolo){
+    // In solo mode apply locally
+    Object.assign({deck,deckSize,cardIdx,flipped,started,drawnCount,ti}, newState);
+    deck=newState.deck??deck;
+    deckSize=newState.deckSize??deckSize;
+    cardIdx=newState.cardIdx??cardIdx;
+    flipped=newState.flipped??flipped;
+    started=newState.started??started;
+    drawnCount=newState.drawnCount??drawnCount;
+    ti=newState.ti??ti;
+    applyGameState({deck,deckSize,cardIdx,flipped,started,drawnCount,ti});
+    return;
+  }
+  if(!db||!stateRef) return;
+  try { await set(stateRef, newState); } catch(e){ console.error('pushState error',e); }
+}
+
+function drawCard(){
+  if(!deck.length||drawing) return;
+  drawing=true; // lock until Firebase echoes back
+  const newDeck=[...deck];
+  const newCardIdx=newDeck.pop();
+  const newState={
+    deck:newDeck, deckSize,
+    cardIdx:newCardIdx, flipped:false,
+    started:true, drawnCount:drawnCount+1, ti:ti+1
+  };
+  if(navigator.vibrate)navigator.vibrate(15);
+  pushState(newState);
+}
+
+function flipCard(){
+  if(cardIdx===null||flipped) return;
+  const newState={deck,deckSize,cardIdx,flipped:true,started,drawnCount,ti};
+  if(navigator.vibrate)navigator.vibrate(10);
+  pushState(newState);
+}
+
+function nextCard(){if(deck.length>0)drawCard()}
+function handleCardTap(){if(!flipped){flipCard()}else{nextCard()}}
+
+async function resetDeck(silent){
+  drawing=false;
+  const newDeck=buildDeck();
+  const newState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,drawnCount:0,ti:0};
+  if(!silent) showToast(DATA[lang].toastReset);
+  await pushState(newState);
+  if(isSolo){ $('cardInner').classList.remove('flipped'); $('cardContainer').classList.remove('card-in'); }
+}
+
+async function shuffleRemaining(){
+  if(deck.length>1){
+    const newState={deck:shuffle([...deck]),deckSize,cardIdx,flipped,started,drawnCount,ti};
+    showToast(DATA[lang].toastShuffle);
+    await pushState(newState);
+  } else {showToast(DATA[lang].toastNoShuffle)}
+}
+
+// ══════════════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════════════
+function showScreen(id){
+  ["roomScreen","lobbyScreen","gameScreen"].forEach(s=>{
+    const el=$(s); if(el) el.style.display="none";
+  });
+  if($(id)) $(id).style.display="flex";
+  // show room pill only when in a hive
+  const pill=$("roomPill");
+  if(pill) pill.style.display=(roomCode&&id==="gameScreen")?"flex":"none";
+}
+
+// ══════════════════════════════════════════════
+//  FIREBASE – ROOM MANAGEMENT
+// ══════════════════════════════════════════════
+async function createRoom(){
+  const btn=$('createBtn');
+  btn.disabled=true;
+  btn.querySelector('span').textContent='Creating…';
+
+  if(!firebaseOk){
+    showToast(DATA[lang].errFirebase);
+    btn.disabled=false; btn.querySelector('span').textContent=DATA[lang].rsCreateBtn;
+    startSolo(); return;
+  }
+
+  const code=genCode();
+  myPlayerId='host_'+Date.now();
+  isHost=true; isSolo=false; roomCode=code;
+
+  const newDeck=buildDeck();
+  const initialState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,drawnCount:0,ti:0};
+
+  stateRef=ref(db,`rooms/${code}/state`);
+
+  try {
+    await set(ref(db,`rooms/${code}`),{
+      createdAt:serverTimestamp(),
+      host:myPlayerId,
+      state:initialState,
+      players:{[myPlayerId]:{name:'Host',isHost:true,joinedAt:serverTimestamp()}}
+    });
+    presenceRef=ref(db,`rooms/${code}/players/${myPlayerId}`);
+    onDisconnect(presenceRef).remove();
+    deck=[...newDeck]; deckSize=deck.length;
+    enterLobby(code);
+    showToast(DATA[lang].roomCreated);
+  } catch(e){
+    console.error('createRoom error:', e);
+    showToast('Error: '+(e.code||e.message||'check console'));
+    btn.disabled=false; btn.querySelector('span').textContent=DATA[lang].rsCreateBtn;
+  }
+}
+
+async function joinRoom(code){
+  if(!firebaseOk){showToast(DATA[lang].errFirebase);startSolo();return;}
+  code=code.toUpperCase().trim();
+  if(!code){$("hiveError").textContent="Enter a room code";return;}
+
+  try {
+    const snap=await get(ref(db,`rooms/${code}`));
+    if(!snap.exists()){$("hiveError").textContent=DATA[lang].errNotFound;return;}
+
+    myPlayerId="p_"+Date.now();
+    isHost=false; isSolo=false;
+    roomCode=code;
+    stateRef=ref(db,`rooms/${code}/state`);
+
+    presenceRef=ref(db,`rooms/${code}/players/${myPlayerId}`);
+    await set(presenceRef,{name:"Player",isHost:false,joinedAt:serverTimestamp()});
+    onDisconnect(presenceRef).remove();
+
+    // Load current state
+    const stateSnap=await get(stateRef);
+    if(stateSnap.exists()) applyGameState(stateSnap.val());
+
+    enterLobby(code);
+    showToast(DATA[lang].roomJoined);
+  } catch(e){
+    console.error(e);
+    $("hiveError").textContent="Connection error";
+  }
+}
+
+function enterLobby(code){
+  $("lobbyCode").textContent=code;
+  $("pillCode").textContent=code;
+  showScreen("lobbyScreen");
+
+  // Listen to players list
+  playersListener=ref(db,`rooms/${code}/players`);
+  onValue(playersListener,(snap)=>{
+    const players=snap.val()||{};
+    renderPlayerList(players);
+    // Non-hosts: when game started, auto-enter
+    if(!isHost){
+       get(stateRef).then(s=>{if(s.exists()&&s.val().gameStarted) enterGame();});
+    }
+  });
+
+  // Show start button only for host
+  $("startBtn").style.display=isHost?"flex":"none";
+  $("lb-hint").textContent=isHost?"Start the game when everyone has joined.":DATA[lang].lbHint;
+
+  // Listen for game start (non-hosts)
+  if(!isHost){
+    onValue(stateRef,(snap)=>{
+       if(snap.exists()&&snap.val().gameStarted){ off(stateRef); enterGame(); }
+    });
+  }
+}
+
+function renderPlayerList(players){
+  const list=$("playerList");
+  list.innerHTML="";
+  Object.entries(players).forEach(([id,p],i)=>{
+    const item=document.createElement("div");
+    item.className="player-item";
+    const dot=document.createElement("div");
+    dot.className="player-dot"+(p.isHost?" host":"");
+    const name=document.createElement("span");
+    name.textContent=p.isHost?"Host":"Player "+(i);
+    item.appendChild(dot);item.appendChild(name);
+    list.appendChild(item);
+  });
+}
+
+async function startGame(){
+  if(!isHost) return;
+  const newDeck=buildDeck();
+  const initialState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,drawnCount:0,ti:0,gameStarted:true};
+  await set(stateRef,initialState);
+  enterGame();
+}
+
+function enterGame(){
+  // Detach lobby listeners
+  if(playersListener) off(playersListener);
+  if(!isHost) off(stateRef); // detach the lobby game-start listener
+
+  // Listen to live game state
+  onValue(stateRef,(snap)=>{
+    if(!snap.exists()) return;
+    applyGameState(snap.val());
+  });
+
+  showScreen("gameScreen");
+  // Only host resets the deck; guests receive shared state from Firebase
+  if(isHost) resetDeck(true);
+}
+
+async function leaveRoom(){
+  if(presenceRef) await remove(presenceRef);
+  if(stateRef) off(stateRef);
+  if(playersListener) off(playersListener);
+  roomCode=null;myPlayerId=null;isHost=false;
+  showToast(DATA[lang].roomLeft);
+  isSolo=true; showScreen("gameScreen"); resetDeck(true);
+}
+
+function startSolo(){
+  isSolo=true;showScreen("gameScreen");
+  resetDeck(true);
+}
+
+
+// ══════════════════════════════════════════════
+//  HIVE MODAL
+// ══════════════════════════════════════════════
+function openHive(){
+  $('hiveOverlay').classList.add('open');
+  $('hiveSheet').classList.add('open');
+  $('hiveError').textContent='';
+  $('hiveCodeInput').value='';
+  setTimeout(()=>{$('hiveCodeInput').focus()},400);
+}
+function closeHive(){
+  $('hiveOverlay').classList.remove('open');
+  $('hiveSheet').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+//  OFFLINE DETECTION
+// ══════════════════════════════════════════════
+window.addEventListener("offline",()=>{
+  $("offlineBadge").classList.add("show");
+  showToast(DATA[lang].toastOffline);
+});
+window.addEventListener("online",()=>{
+  $("offlineBadge").classList.remove("show");
+  showToast(DATA[lang].toastReconnect);
+});
+
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+//  EVENT LISTENERS
+// ══════════════════════════════════════════════
+
+// Hive modal
+$("hiveBtn").addEventListener("click",openHive);
+$("hiveOverlay").addEventListener("click",closeHive);
+$("hiveCreateBtn").addEventListener("click",async()=>{ closeHive(); await createRoom(); });
+$("hiveJoinBtn").addEventListener("click",()=>joinRoom($("hiveCodeInput").value));
+$("hiveCodeInput").addEventListener("keydown",e=>{if(e.key==="Enter")joinRoom($("hiveCodeInput").value)});
+$("hiveCodeInput").addEventListener("input",()=>{$("hiveError").textContent=""});
+
+// Lobby
+$("lobbyCode").addEventListener("click",()=>copyCode(roomCode));
+$("startBtn").addEventListener("click",startGame);
+$("leaveBtn").addEventListener("click",leaveRoom);
+
+// Game
+$("roomPill").addEventListener("click",()=>{if(roomCode)copyCode(roomCode)});
+$("deckTop").addEventListener("click",drawCard);
+$("cardInner").addEventListener("click",handleCardTap);
+$("resetBtn").addEventListener("click",()=>resetDeck(false));
+$("shuffleBtn").addEventListener("click",shuffleRemaining);
+$("langBtn").addEventListener("click",()=>{
+  lang=lang==="en"?"pl":"en";
+  setTexts();updateQ();updateUI();
+});
+
+// Touch swipe
+const ca=$("cardArea");
+ca.addEventListener("touchstart",e=>{tsy=e.touches[0].clientY;tsx=e.touches[0].clientX},{passive:true});
+ca.addEventListener("touchend",e=>{
+  const dy=tsy-e.changedTouches[0].clientY,dx=Math.abs(tsx-e.changedTouches[0].clientX);
+  if(dy>60&&dy>dx){if(flipped)nextCard();else if(cardIdx!==null)flipCard()}
+},{passive:true});
+
+// ── Init ──
+setTexts();
+isSolo=true; showScreen("gameScreen"); resetDeck(true);
+</script>
+
+<!-- ── Hive Modal ── -->
+<div class="hive-overlay" id="hiveOverlay"></div>
+<div class="hive-sheet" id="hiveSheet">
+  <div class="hive-handle"></div>
+  <div class="hive-title" id="hive-title">🐝 Join a Hive</div>
+
+  <button type="button" class="hive-btn hive-btn-yellow" id="hiveCreateBtn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+    <span id="hive-create-label">New hive</span>
+  </button>
+
+  <div class="hive-or"><span id="hive-or">or</span></div>
+
+  <input type="text" class="hive-input" id="hiveCodeInput" maxlength="6" placeholder="Hive code…" autocomplete="off" autocorrect="off" spellcheck="false">
+  <div class="hive-error" id="hiveError"></div>
+  <button type="button" class="hive-btn hive-btn-white" id="hiveJoinBtn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+    <span id="hive-join-label">Join hive</span>
+  </button>
+</div>
+
+</body>
+</html>
