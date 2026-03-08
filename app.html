@@ -307,7 +307,7 @@ const THEMES=['t0','t1','t2','t3','t4','t5'];
 
 const DATA={
   en:{
-    title:"BeeHonest",subtitle:"Draw · Flip · Connect",
+    title:"BeeHonest",subtitle:"Draw · Flip · Talk",
     deckLabel:"Tap to draw",flipHint:"Tap to reveal",flipSub:"or swipe up",
     swipeLabel:"Swipe up for next",drawBtn:"Draw card",
     drawn:(n,t)=>`${n} of ${t} drawn`,left:n=>`${n} remaining`,
@@ -371,7 +371,7 @@ const DATA={
     ]
   },
   pl:{
-    title:"Karty Rozmów",subtitle:"Dobierz · Odwróć · Połącz",
+    title:"BeeHonest",subtitle:"Dobierz · Odwróć · Porozmawiaj",
     deckLabel:"Dotknij, aby dobrać",flipHint:"Dotknij, aby odkryć",flipSub:"lub przesuń w górę",
     swipeLabel:"Przesuń w górę",drawBtn:"Dobierz kartę",
     drawn:(n,t)=>`${n} z ${t} dobranych`,left:n=>`${n} pozostało`,
@@ -407,7 +407,7 @@ const DATA={
       "Jaką najodważniejszą/najbardziej ryzykowną rzecz zrobiłeś/aś lub chcesz zrobić?",
       "Co wolisz, oceany czy góry? Dlaczego?",
       "Jakich odkryć naukowych chciałbyś/chciałabyś dożyć?",
-      "Czy twoje młodsze „ja" byłoby dumne z tego, kim jesteś dzisiaj?",
+      "Czy twoje młodsze \u201Eja\u201D byłoby dumne z tego, kim jesteś dzisiaj?",
       "Gdybyś mógł/mogła dać radę swojemu młodszemu \"ja\", co by to było?",
       "Co jako dziecko powiedziałbyś/powiedziałabyś sobie teraz?",
       "Gdybyś mógł/mogła cofnąć się w czasie i nauczyć jednej rzeczy, co by to było?",
@@ -485,7 +485,9 @@ function drawCard(){
   drawing=true;started=true;
   let inner=$("cardInner");inner.classList.remove("flipped");flipped=false;
   let c=$("cardContainer");c.classList.remove("card-in");
+  let snap=deck;
   setTimeout(()=>{
+    if(deck!==snap){drawing=false;return;}
     cardIdx=deck.pop();drawnCount++;updateQ();applyTheme();ti++;
     c.classList.add("card-in");drawing=false;updateUI();
     if(navigator.vibrate)navigator.vibrate(15);
@@ -508,13 +510,13 @@ function handleCardTap(){
   else{nextCard()}
 }
 
-function resetDeck(){
-  let n=DATA.en.questions.length;
+function resetDeck(silent){
+  let n=Math.max(DATA.en.questions.length,DATA.pl.questions.length);
   deck=shuffle([...Array(n).keys()]);deckSize=deck.length;
   ti=0;flipped=false;cardIdx=null;drawing=false;started=false;drawnCount=0;
   $("cardInner").classList.remove("flipped");
   $("cardContainer").classList.remove("card-in");
-  updateQ();updateUI();showToast(DATA[lang].toastReset);
+  updateQ();updateUI();if(!silent)showToast(DATA[lang].toastReset);
 }
 
 function shuffleRemaining(){
@@ -540,7 +542,7 @@ ca.addEventListener("touchend",e=>{
   if(dy>60&&dy>dx){if(flipped)nextCard();else if(cardIdx!==null)flipCard()}
 },{passive:true});
 
-setTexts();resetDeck();
+setTexts();resetDeck(true);
 </script>
 </body>
 </html>
