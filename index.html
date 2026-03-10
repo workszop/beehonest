@@ -126,7 +126,7 @@ body{
 }
 .btn-hero-sec:hover{transform:translateY(-3px);box-shadow:5px 8px 0 var(--dark)}
 .btn-hero-sec:active{transform:translateY(2px);box-shadow:2px 2px 0 var(--dark)}
-.cta-buttons{display:flex;justify-content:center;align-items:center;gap:32px;flex-wrap:wrap;margin-bottom:8px}
+.cta-buttons{display:flex;justify-content:center;align-items:center;gap:32px;flex-wrap:wrap;margin-bottom:8px;position:relative;z-index:1}
 .btn-hero-hive{padding:16px 30px;font-size:16px;font-weight:900}
 
 /* Phone mockups */
@@ -292,6 +292,7 @@ body{
   position:absolute;
   right:-20px;bottom:-10px;
   width:160px;opacity:.2;
+  pointer-events:none;z-index:0;
 }
 .tagline-chips{
   display:flex;justify-content:center;flex-wrap:wrap;gap:8px;
