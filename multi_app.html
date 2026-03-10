@@ -37,36 +37,6 @@ body{
   padding:calc(16px + var(--safe-top)) 20px calc(16px + var(--safe-bottom));
 }
 
-/* ── Room Screen ── */
-#roomScreen{
-  display:flex;flex-direction:column;
-  height:100vh;height:100dvh;
-  max-width:440px;margin:0 auto;
-  padding:calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
-  justify-content:center;gap:0;
-}
-.room-logo{
-  text-align:center;margin-bottom:32px;
-}
-.room-logo h1{font-size:2rem;font-weight:900;color:#1a1a2e;letter-spacing:-.02em}
-.room-logo p{font-size:13px;color:#aaa;font-weight:700;margin-top:3px}
-
-.room-card{
-  background:#fff;border:3px solid #1a1a2e;border-radius:24px;
-  padding:24px;box-shadow:6px 6px 0 #1a1a2e;margin-bottom:16px;
-}
-.room-card h2{font-size:14px;font-weight:900;color:#1a1a2e;text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
-
-.room-input{
-  width:100%;padding:14px 16px;font-size:18px;font-weight:800;
-  border:3px solid #1a1a2e;border-radius:14px;background:#FFF8F0;
-  font-family:inherit;color:#1a1a2e;outline:none;
-  text-transform:uppercase;letter-spacing:.12em;text-align:center;
-  transition:box-shadow .15s;
-}
-.room-input:focus{box-shadow:4px 4px 0 #1a1a2e}
-.room-input::placeholder{text-transform:none;letter-spacing:0;color:#ccc;font-size:14px}
-
 .room-btn{
   width:100%;padding:16px;font-size:18px;font-weight:800;
   border:3px solid #1a1a2e;border-radius:16px;cursor:pointer;
@@ -78,17 +48,6 @@ body{
 .room-btn-primary{background:#FF6B6B;color:#fff;box-shadow:4px 4px 0 #1a1a2e}
 .room-btn-secondary{background:#fff;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e}
 .room-btn:disabled{opacity:.4;pointer-events:none}
-
-.room-divider{
-  display:flex;align-items:center;gap:10px;margin:4px 0;
-}
-.room-divider span{font-size:11px;font-weight:800;color:#ccc;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
-.room-divider::before,.room-divider::after{content:'';flex:1;height:2px;background:#eee;border-radius:2px}
-
-.room-error{
-  font-size:12px;font-weight:800;color:#FF6B6B;text-align:center;
-  margin-top:8px;min-height:18px;
-}
 
 /* ── Lobby screen ── */
 #lobbyScreen{
@@ -330,45 +289,10 @@ body{
 .hive-btn:disabled{opacity:.4;pointer-events:none}
 .hive-btn-yellow{background:#FFD93D;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e}
 .hive-btn-white{background:#fff;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e}
-/* room pill active state */
-.room-pill.active .room-pill-dot{background:#FFD93D}
 
 </style>
 </head>
 <body>
-
-<!-- ══════════ ROOM SCREEN ══════════ -->
-<div id="roomScreen" style="display:none">
-  <div class="room-logo">
-    <h1>🐝 BeeHonest</h1>
-    <p id="rs-subtitle">Play together · Real-time sync</p>
-  </div>
-
-  <div class="room-card">
-    <h2 id="rs-create-label">Create a room</h2>
-    <button type="button" class="room-btn room-btn-primary" id="createBtn">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-      <span id="rs-create-btn">New room</span>
-    </button>
-  </div>
-
-  <div class="room-divider"><span id="rs-or">or</span></div>
-
-  <div class="room-card">
-    <h2 id="rs-join-label">Join a room</h2>
-    <input type="text" class="room-input" id="codeInput" maxlength="6" placeholder="Room code…" autocomplete="off" autocorrect="off" spellcheck="false">
-    <button type="button" class="room-btn room-btn-secondary" id="joinBtn">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-      <span id="rs-join-btn">Join room</span>
-    </button>
-    <div class="room-error" id="joinError"></div>
-  </div>
-
-  <button type="button" class="room-btn room-btn-secondary" id="soloBtn" style="margin-top:4px;border-color:#ddd;box-shadow:none;color:#aaa">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7 7 0 0 1 13 0"/></svg>
-    <span id="rs-solo-btn">Play solo (no sync)</span>
-  </button>
-</div>
 
 <!-- ══════════ LOBBY SCREEN ══════════ -->
 <div id="lobbyScreen" style="display:none">
@@ -488,7 +412,6 @@ body{
 
 <script src="questions.js"></script>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
@@ -541,10 +464,6 @@ const DATA={
     toastReset:"Deck reset",toastShuffle:"Cards shuffled",toastNoShuffle:"Not enough cards",
     toastCopied:"Code copied!",toastOffline:"You're offline",toastReconnect:"Back online!",
     roomCreated:"Room created",roomJoined:"Joined room",roomLeft:"Left room",
-    rsSubtitle:"Play together · Real-time sync",
-    rsCreateLabel:"Create a room",rsCreateBtn:"New room",
-    rsJoinLabel:"Join a room",rsJoinBtn:"Join room",
-    rsSoloBtn:"Play solo (no sync)",rsOr:"or",
     lbLabel:"Room code — share with friends",lbSub:"Tap code to copy",
     lbPlayersLabel:"Players online",lbHint:"Waiting for others… Host starts the game.",
     lbStartBtn:"Start game",lbLeaveBtn:"Leave room",
@@ -560,10 +479,6 @@ const DATA={
     toastReset:"Talia zresetowana",toastShuffle:"Karty przetasowane",toastNoShuffle:"Za mało kart",
     toastCopied:"Kod skopiowany!",toastOffline:"Brak połączenia",toastReconnect:"Połączono!",
     roomCreated:"Pokój utworzony",roomJoined:"Dołączono do pokoju",roomLeft:"Opuszczono pokój",
-    rsSubtitle:"Grajcie razem · Synchronizacja",
-    rsCreateLabel:"Utwórz pokój",rsCreateBtn:"Nowy pokój",
-    rsJoinLabel:"Dołącz do pokoju",rsJoinBtn:"Dołącz",
-    rsSoloBtn:"Graj solo (bez synchronizacji)",rsOr:"lub",
     lbLabel:"Kod pokoju — udostępnij znajomym",lbSub:"Dotknij kod, aby skopiować",
     lbPlayersLabel:"Gracze online",lbHint:"Czekam na innych… Host startuje grę.",
     lbStartBtn:"Rozpocznij grę",lbLeaveBtn:"Opuść pokój",
@@ -575,8 +490,7 @@ const DATA={
 // ══════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════
-let lang="en", deck=[], deckSize=0, ti=0, flipped=false, cardIdx=null, drawing=false, started=false, drawnCount=0, toastT=null;
-let tsy=0, tsx=0;
+let lang="en", deck=[], deckSize=0, ti=0, flipped=false, cardIdx=null, drawing=false, started=false, toastT=null, tsy=0, tsx=0;
 let roomCode=null, myPlayerId=null, isHost=false, isSolo=false;
 let stateRef=null, presenceRef=null;
 let playersListener=null;
@@ -622,11 +536,6 @@ function setTexts(){
   $("hive-create-label").textContent=d.hiveCreate;
   $("hive-join-label").textContent=d.hiveJoin;
   $("hive-or").textContent=d.hiveOr;
-  // room screen
-  $("rs-subtitle").textContent=d.rsSubtitle;
-  $("rs-create-label").textContent=d.rsCreateLabel;$("rs-create-btn").textContent=d.rsCreateBtn;
-  $("rs-join-label").textContent=d.rsJoinLabel;$("rs-join-btn").textContent=d.rsJoinBtn;
-  $("rs-solo-btn").textContent=d.rsSoloBtn;$("rs-or").textContent=d.rsOr;
   // lobby
   $("lb-label").textContent=d.lbLabel;$("lb-sub").textContent=d.lbSub;
   $("lb-players-label").textContent=d.lbPlayersLabel;$("lb-hint").textContent=d.lbHint;
@@ -674,7 +583,6 @@ function applyGameState(state){
   cardIdx=state.cardIdx??null;
   flipped=state.flipped||false;
   started=state.started||false;
-  drawnCount=state.drawnCount||0;
   ti=state.ti||0;
   drawing=false; // always unlock after remote state arrives
 
@@ -704,15 +612,13 @@ function applyGameState(state){
 async function pushState(newState){
   if(isSolo){
     // In solo mode apply locally
-    Object.assign({deck,deckSize,cardIdx,flipped,started,drawnCount,ti}, newState);
     deck=newState.deck??deck;
     deckSize=newState.deckSize??deckSize;
     cardIdx=newState.cardIdx??cardIdx;
     flipped=newState.flipped??flipped;
     started=newState.started??started;
-    drawnCount=newState.drawnCount??drawnCount;
     ti=newState.ti??ti;
-    applyGameState({deck,deckSize,cardIdx,flipped,started,drawnCount,ti});
+    applyGameState({deck,deckSize,cardIdx,flipped,started,ti});
     return;
   }
   if(!db||!stateRef) return;
@@ -727,7 +633,7 @@ function drawCard(){
   const newState={
     deck:newDeck, deckSize,
     cardIdx:newCardIdx, flipped:false,
-    started:true, drawnCount:drawnCount+1, ti:ti+1
+    started:true, ti:ti+1
   };
   if(navigator.vibrate)navigator.vibrate(15);
   pushState(newState);
@@ -735,18 +641,17 @@ function drawCard(){
 
 function flipCard(){
   if(cardIdx===null||flipped) return;
-  const newState={deck,deckSize,cardIdx,flipped:true,started,drawnCount,ti};
+  const newState={deck,deckSize,cardIdx,flipped:true,started,ti};
   if(navigator.vibrate)navigator.vibrate(10);
   pushState(newState);
 }
 
-function nextCard(){if(deck.length>0)drawCard()}
-function handleCardTap(){if(!flipped){flipCard()}else{nextCard()}}
+function handleCardTap(){if(!flipped){flipCard()}else{if(deck.length>0)drawCard()}}
 
 async function resetDeck(silent){
   drawing=false;
   const newDeck=buildDeck();
-  const newState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,drawnCount:0,ti:0};
+  const newState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,ti:0};
   if(!silent) showToast(DATA[lang].toastReset);
   await pushState(newState);
   if(isSolo){ $('cardInner').classList.remove('flipped'); $('cardContainer').classList.remove('card-in'); }
@@ -754,7 +659,7 @@ async function resetDeck(silent){
 
 async function shuffleRemaining(){
   if(deck.length>1){
-    const newState={deck:shuffle([...deck]),deckSize,cardIdx,flipped,started,drawnCount,ti};
+    const newState={deck:shuffle([...deck]),deckSize,cardIdx,flipped,started,ti};
     showToast(DATA[lang].toastShuffle);
     await pushState(newState);
   } else {showToast(DATA[lang].toastNoShuffle)}
@@ -764,7 +669,7 @@ async function shuffleRemaining(){
 //  SCREENS
 // ══════════════════════════════════════════════
 function showScreen(id){
-  ["roomScreen","lobbyScreen","gameScreen"].forEach(s=>{
+  ["lobbyScreen","gameScreen"].forEach(s=>{
     const el=$(s); if(el) el.style.display="none";
   });
   if($(id)) $(id).style.display="flex";
@@ -777,13 +682,8 @@ function showScreen(id){
 //  FIREBASE – ROOM MANAGEMENT
 // ══════════════════════════════════════════════
 async function createRoom(){
-  const btn=$('createBtn');
-  btn.disabled=true;
-  btn.querySelector('span').textContent='Creating…';
-
   if(!firebaseOk){
     showToast(DATA[lang].errFirebase);
-    btn.disabled=false; btn.querySelector('span').textContent=DATA[lang].rsCreateBtn;
     startSolo(); return;
   }
 
@@ -792,7 +692,7 @@ async function createRoom(){
   isHost=true; isSolo=false; roomCode=code;
 
   const newDeck=buildDeck();
-  const initialState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,drawnCount:0,ti:0};
+  const initialState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,ti:0};
 
   stateRef=ref(db,`rooms/${code}/state`);
 
@@ -811,7 +711,6 @@ async function createRoom(){
   } catch(e){
     console.error('createRoom error:', e);
     showToast('Error: '+(e.code||e.message||'check console'));
-    btn.disabled=false; btn.querySelector('span').textContent=DATA[lang].rsCreateBtn;
   }
 }
 
@@ -891,7 +790,7 @@ function renderPlayerList(players){
 async function startGame(){
   if(!isHost) return;
   const newDeck=buildDeck();
-  const initialState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,drawnCount:0,ti:0,gameStarted:true};
+  const initialState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,ti:0,gameStarted:true};
   await set(stateRef,initialState);
   enterGame();
 }
@@ -955,7 +854,6 @@ window.addEventListener("online",()=>{
 });
 
 // ══════════════════════════════════════════════
-// ══════════════════════════════════════════════
 //  EVENT LISTENERS
 // ══════════════════════════════════════════════
 
@@ -988,7 +886,7 @@ const ca=$("cardArea");
 ca.addEventListener("touchstart",e=>{tsy=e.touches[0].clientY;tsx=e.touches[0].clientX},{passive:true});
 ca.addEventListener("touchend",e=>{
   const dy=tsy-e.changedTouches[0].clientY,dx=Math.abs(tsx-e.changedTouches[0].clientX);
-  if(dy>60&&dy>dx){if(flipped)nextCard();else if(cardIdx!==null)flipCard()}
+  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard()}else if(cardIdx!==null)flipCard()}
 },{passive:true});
 
 // ── Init ──
