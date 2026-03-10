@@ -66,15 +66,15 @@ var QUESTIONS={
     "Opisz swoje wymarzone wakacje, gdyby pieniądze nie grały roli.",
     "Kiedy byłeś/aś dzieckiem, jakie było twoje największe marzenie?",
     "Jaki talent najbardziej chciałbyś/chciałabyś rozwijać?",
-    "Czego (jakiej aktywności) chciałbyś/chciałabyś kiedyś spróbować?",
+    "O jakich aktywnościach marzysz i chciałbyś/chciałabyś je kiedyś spróbować?",
     "Jak lubisz się ubierać (elegancko, na luzie, dres i klapki)?",
     "Masz jedną dodatkową godzinę dziennie, możesz robić co chcesz, co by to było?",
     "Jakie \"rzeczy dla starszych ludzi\" robisz?",
     "Gdybyś mógł/mogła mówić w innym języku, jaki by to był język?",
-    "Czy masz listę rzeczy do zrobienia przed śmiercią (bucket list)? Wymień jedną rzecz z tej listy.",
+    "Czy masz listę marzeń do spełnienia? Wymień jedną rzecz z tej listy.",
     "Czego nowego lub ciekawego ostatnio się nauczyłeś/aś?",
     "Czy jest ostatnio jakiś temat, z którego chciałbyś/chciałabyś mieć mentora?",
-    "Jako jakie zwierzę chciałbyś/chciałabyś się odrodzić po reinkarnacji?",
+    "Jako jakie zwierzę chciałbyś/chciałabyś się odrodzić po reinkarnacji i dlaczego?",
     "Kiedy ostatni raz zrobiłeś/aś coś po raz pierwszy?",
     "Czy kiedykolwiek przeżyłeś/aś szok kulturowy? Gdzie to było i co się stało?",
     "Czy poznałeś/aś ostatnio jakieś przydatne triki na produktywność?",
@@ -87,7 +87,7 @@ var QUESTIONS={
     "Gdybyś mógł/mogła cofnąć się w czasie i nauczyć jednej rzeczy, co by to było?",
     "Jakie były twoje najszczęśliwsze chwile?",
     "Jaką jedną umiejętność związaną z pracą chciałbyś/chciałabyś rozwinąć, zwłaszcza gdyby to było łatwe?",
-    "Jakiej nowej lub dodatkowej umiejętności uważasz, że potrzebujesz teraz, aby pójść dalej?",
+    "Jaką nową lub dodatkową umiejętność musisz zdobyć, żeby się dalej rozwijać?",
     "Co najbardziej podziwiasz u współpracownika?",
     "Opisz siebie jednym słowem.",
     "Jaka jest najgorsza rada, jaką kiedykolwiek otrzymałeś/aś, i dlaczego była taka zła?",
@@ -105,6 +105,6 @@ var QUESTIONS={
     "Jaka jest twoja ulubiona podróż?",
     "Jak chciałbyś/chciałabyś umrzeć?",
     "Podziel się jednym nudnym lub trywialnym faktem o sobie.",
-    "W jakim filmie teraz jesteśmy lub w jakim filmie grasz?"
+    "W jakim filmie toczy się twoje życie lub jaką rolę w nim grasz?"
   ]
 };
