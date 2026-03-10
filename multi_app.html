@@ -486,6 +486,8 @@ body{
 <div class="offline-badge" id="offlineBadge">OFFLINE</div>
 <div class="copied-tip" id="copiedTip"></div>
 
+<script src="questions.js"></script>
+
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
@@ -990,9 +992,8 @@ ca.addEventListener("touchend",e=>{
 },{passive:true});
 
 // ── Init ──
-const _q = await fetch('questions.json').then(r=>r.json());
-DATA.en.questions=_q.en;
-DATA.pl.questions=_q.pl;
+DATA.en.questions=QUESTIONS.en;
+DATA.pl.questions=QUESTIONS.pl;
 setTexts();
 isSolo=true; showScreen("gameScreen"); resetDeck(true);
 </script>

@@ -302,6 +302,7 @@ body{
 
 <div class="toast" id="toast"></div>
 
+<script src="questions.js"></script>
 <script>
 const THEMES=['t0','t1','t2','t3','t4','t5'];
 
@@ -436,11 +437,9 @@ ca.addEventListener("touchend",e=>{
   if(dy>60&&dy>dx){if(flipped)nextCard();else if(cardIdx!==null)flipCard()}
 },{passive:true});
 
-fetch('questions.json').then(r=>r.json()).then(q=>{
-  DATA.en.questions=q.en;
-  DATA.pl.questions=q.pl;
-  setTexts();resetDeck(true);
-});
+DATA.en.questions=QUESTIONS.en;
+DATA.pl.questions=QUESTIONS.pl;
+setTexts();resetDeck(true);
 </script>
 </body>
 </html>
