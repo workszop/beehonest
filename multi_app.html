@@ -734,10 +734,12 @@ async function joinRoom(code){
 
     // Load current state
     const stateSnap=await get(stateRef);
-    if(stateSnap.exists()) applyGameState(stateSnap.val());
+    const currentState=stateSnap.exists()?stateSnap.val():null;
+    if(currentState) applyGameState(currentState);
 
     closeHive();
-    enterLobby(code);
+    const gameActive=currentState&&(currentState.gameStarted||currentState.started);
+    if(gameActive) enterGame(); else enterLobby(code);
     showToast(DATA[lang].roomJoined);
   } catch(e){
     console.error(e);
