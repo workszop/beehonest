@@ -734,9 +734,12 @@ async function joinRoom(code){
 
     // Load current state
     const stateSnap=await get(stateRef);
-    if(stateSnap.exists()) applyGameState(stateSnap.val());
+    const currentState=stateSnap.exists()?stateSnap.val():null;
+    if(currentState) applyGameState(currentState);
 
-    enterLobby(code);
+    closeHive();
+    const gameActive=currentState&&(currentState.gameStarted||currentState.started);
+    if(gameActive) enterGame(); else enterLobby(code);
     showToast(DATA[lang].roomJoined);
   } catch(e){
     console.error(e);
@@ -754,10 +757,6 @@ function enterLobby(code){
   onValue(playersListener,(snap)=>{
     const players=snap.val()||{};
     renderPlayerList(players);
-    // Non-hosts: when game started, auto-enter
-    if(!isHost){
-       get(stateRef).then(s=>{if(s.exists()&&s.val().gameStarted) enterGame();});
-    }
   });
 
   // Show start button only for host
@@ -807,8 +806,6 @@ function enterGame(){
   });
 
   showScreen("gameScreen");
-  // Only host resets the deck; guests receive shared state from Firebase
-  if(isHost) resetDeck(true);
 }
 
 async function leaveRoom(){
