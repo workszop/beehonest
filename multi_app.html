@@ -804,8 +804,6 @@ function enterGame(){
   });
 
   showScreen("gameScreen");
-  // Only host resets the deck; guests receive shared state from Firebase
-  if(isHost) resetDeck(true);
 }
 
 async function leaveRoom(){
