@@ -736,6 +736,7 @@ async function joinRoom(code){
     const stateSnap=await get(stateRef);
     if(stateSnap.exists()) applyGameState(stateSnap.val());
 
+    closeHive();
     enterLobby(code);
     showToast(DATA[lang].roomJoined);
   } catch(e){
@@ -754,10 +755,6 @@ function enterLobby(code){
   onValue(playersListener,(snap)=>{
     const players=snap.val()||{};
     renderPlayerList(players);
-    // Non-hosts: when game started, auto-enter
-    if(!isHost){
-       get(stateRef).then(s=>{if(s.exists()&&s.val().gameStarted) enterGame();});
-    }
   });
 
   // Show start button only for host
