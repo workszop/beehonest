@@ -228,6 +228,15 @@ body{
 @keyframes cardIn{from{opacity:0;transform:translateY(30px) rotate(-3deg) scale(.9)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
 .card-in{animation:cardIn .4s cubic-bezier(.3,0,.2,1.2)}
 
+/* ── Doom cards ── */
+.doom .card-front,.doom .card-back{background:#1a1a2e}
+.doom .q-text{color:#fff}
+.doom .card-corner{color:#fff;opacity:.15}
+.doom .front-icon{background:rgba(255,255,255,.08);border-color:#fff;box-shadow:3px 3px 0 rgba(255,255,255,.25);color:#fff}
+.doom .front-hint{color:#fff}
+.doom .front-sub{color:rgba(255,255,255,.5)}
+.btn-secondary.doom-on{background:#1a1a2e;color:#fff}
+
 /* Offline badge */
 .offline-badge{
   display:none;
@@ -400,6 +409,9 @@ body{
     <button type="button" class="btn btn-secondary" id="shuffleBtn" title="Shuffle Remaining">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
     </button>
+    <button type="button" class="btn btn-secondary" id="doomBtn" title="Doom cards">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/></svg>
+    </button>
     <button type="button" class="btn btn-primary" id="hiveBtn">
       <span id="hiveLabel">Join a hive</span>
     </button>
@@ -462,6 +474,7 @@ const DATA={
     drawn:(n,t)=>`${n} of ${t} drawn`,left:n=>`${n} remaining`,
     langLabel:"PL",emptyTitle:"All cards drawn!",emptySub:"Reset the deck to start again.",
     toastReset:"Deck reset",toastShuffle:"Cards shuffled",toastNoShuffle:"Not enough cards",
+    toastDoomOn:"Doom cards added",toastDoomOff:"Doom cards removed",
     toastCopied:"Code copied!",toastOffline:"You're offline",toastReconnect:"Back online!",
     roomCreated:"Room created",roomJoined:"Joined room",roomLeft:"Left room",
     lbLabel:"Room code — share with friends",lbSub:"Tap code to copy",
@@ -477,6 +490,7 @@ const DATA={
     drawn:(n,t)=>`${n} z ${t} dobranych`,left:n=>`${n} pozostało`,
     langLabel:"EN",emptyTitle:"Wszystkie karty dobrane!",emptySub:"Zresetuj, aby zacząć od nowa.",
     toastReset:"Talia zresetowana",toastShuffle:"Karty przetasowane",toastNoShuffle:"Za mało kart",
+    toastDoomOn:"Karty doom dodane",toastDoomOff:"Karty doom usunięte",
     toastCopied:"Kod skopiowany!",toastOffline:"Brak połączenia",toastReconnect:"Połączono!",
     roomCreated:"Pokój utworzony",roomJoined:"Dołączono do pokoju",roomLeft:"Opuszczono pokój",
     lbLabel:"Kod pokoju — udostępnij znajomym",lbSub:"Dotknij kod, aby skopiować",
@@ -490,7 +504,8 @@ const DATA={
 // ══════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════
-let lang="en", deck=[], deckSize=0, ti=0, flipped=false, cardIdx=null, drawing=false, started=false, toastT=null, tsy=0, tsx=0;
+let lang="en", deck=[], deckSize=0, ti=0, flipped=false, card=null, drawing=false, started=false, toastT=null, tsy=0, tsx=0;
+let doomOn=false, doomDrawn=[];
 let roomCode=null, myPlayerId=null, isHost=false, isSolo=false;
 let stateRef=null, presenceRef=null;
 let playersListener=null;
@@ -545,10 +560,20 @@ function setTexts(){
 function applyTheme(){
   let c=$("cardContainer");
   THEMES.forEach(t=>c.classList.remove(t));
-  c.classList.add(THEMES[ti%THEMES.length]);
+  c.classList.remove("doom");
+  if(card&&card.d)c.classList.add("doom");
+  else c.classList.add(THEMES[ti%THEMES.length]);
 }
 
-function updateQ(){$("questionText").textContent=cardIdx!==null?DATA[lang].questions[cardIdx]:""}
+function updateQ(){
+  if(card===null){$("questionText").textContent="";return}
+  const list=card.d?DOOM_QUESTIONS[lang]:DATA[lang].questions;
+  $("questionText").textContent=list[card.i];
+}
+
+// Legacy rooms stored bare number indices; normalize to {d,i}
+function normCard(e){return e==null?null:(typeof e==="number"?{d:0,i:e}:e)}
+function cardKey(e){return e==null?null:e.d+":"+e.i}
 
 function updateUI(){
   const d=DATA[lang], rem=deck.length, drawn=deckSize-rem, pct=deckSize>0?(drawn/deckSize)*100:0;
@@ -571,19 +596,34 @@ function updateUI(){
 //  GAME LOGIC
 // ══════════════════════════════════════════════
 function buildDeck(){
-  const n=Math.max(DATA.en.questions.length,DATA.pl.questions.length);
-  return shuffle([...Array(n).keys()]);
+  const n=Math.min(DATA.en.questions.length,DATA.pl.questions.length);
+  let entries=[...Array(n).keys()].map(i=>({d:0,i}));
+  if(doomOn){
+    const m=Math.min(DOOM_QUESTIONS.en.length,DOOM_QUESTIONS.pl.length);
+    for(let i=0;i<m;i++)entries.push({d:1,i});
+  }
+  return shuffle(entries);
+}
+
+function undrawnDoom(){
+  const seen=new Set(doomDrawn);
+  const m=Math.min(DOOM_QUESTIONS.en.length,DOOM_QUESTIONS.pl.length),e=[];
+  for(let i=0;i<m;i++)if(!seen.has(i))e.push({d:1,i});
+  return e;
 }
 
 // Apply state to UI (called by onValue listener for everyone)
 function applyGameState(state){
-  const prevCardIdx = cardIdx;
-  deck=state.deck||[];
+  const prevKey = cardKey(card);
+  deck=(state.deck||[]).map(normCard);
   deckSize=state.deckSize||deck.length;
-  cardIdx=state.cardIdx??null;
+  card=normCard(state.card??state.cardIdx??null);
   flipped=state.flipped||false;
   started=state.started||false;
   ti=state.ti||0;
+  doomOn=state.doomOn||false;
+  doomDrawn=state.doomDrawn||[];
+  $("doomBtn").classList.toggle("doom-on",doomOn);
   drawing=false; // always unlock after remote state arrives
 
   // Handle flip animation
@@ -594,8 +634,8 @@ function applyGameState(state){
   }
 
   // Handle card-in animation: trigger whenever a new card appears
-  if(started && cardIdx!==null){
-    if(cardIdx !== prevCardIdx){
+  if(started && card!==null){
+    if(cardKey(card) !== prevKey){
       // New card drawn — re-trigger animation
       const ci=$('cardContainer');
       ci.classList.remove('card-in');
@@ -612,13 +652,16 @@ function applyGameState(state){
 async function pushState(newState){
   if(isSolo){
     // In solo mode apply locally
-    deck=newState.deck??deck;
-    deckSize=newState.deckSize??deckSize;
-    cardIdx=newState.cardIdx??cardIdx;
-    flipped=newState.flipped??flipped;
-    started=newState.started??started;
-    ti=newState.ti??ti;
-    applyGameState({deck,deckSize,cardIdx,flipped,started,ti});
+    applyGameState({
+      deck:newState.deck??deck,
+      deckSize:newState.deckSize??deckSize,
+      card:newState.card??card,
+      flipped:newState.flipped??flipped,
+      started:newState.started??started,
+      ti:newState.ti??ti,
+      doomOn:newState.doomOn??doomOn,
+      doomDrawn:newState.doomDrawn??doomDrawn
+    });
     return;
   }
   if(!db||!stateRef) return;
@@ -629,19 +672,21 @@ function drawCard(){
   if(!deck.length||drawing) return;
   drawing=true; // lock until Firebase echoes back
   const newDeck=[...deck];
-  const newCardIdx=newDeck.pop();
+  const newCard=newDeck.pop();
+  const newDoomDrawn=newCard.d?[...doomDrawn,newCard.i]:doomDrawn;
   const newState={
     deck:newDeck, deckSize,
-    cardIdx:newCardIdx, flipped:false,
-    started:true, ti:ti+1
+    card:newCard, flipped:false,
+    started:true, ti:ti+1,
+    doomOn, doomDrawn:newDoomDrawn
   };
   if(navigator.vibrate)navigator.vibrate(15);
   pushState(newState);
 }
 
 function flipCard(){
-  if(cardIdx===null||flipped) return;
-  const newState={deck,deckSize,cardIdx,flipped:true,started,ti};
+  if(card===null||flipped) return;
+  const newState={deck,deckSize,card,flipped:true,started,ti,doomOn,doomDrawn};
   if(navigator.vibrate)navigator.vibrate(10);
   pushState(newState);
 }
@@ -650,8 +695,9 @@ function handleCardTap(){if(!flipped){flipCard()}else{if(deck.length>0)drawCard(
 
 async function resetDeck(silent){
   drawing=false;
+  doomDrawn=[];
   const newDeck=buildDeck();
-  const newState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,ti:0};
+  const newState={deck:newDeck,deckSize:newDeck.length,card:null,flipped:false,started:false,ti:0,doomOn,doomDrawn:[]};
   if(!silent) showToast(DATA[lang].toastReset);
   await pushState(newState);
   if(isSolo){ $('cardInner').classList.remove('flipped'); $('cardContainer').classList.remove('card-in'); }
@@ -659,10 +705,25 @@ async function resetDeck(silent){
 
 async function shuffleRemaining(){
   if(deck.length>1){
-    const newState={deck:shuffle([...deck]),deckSize,cardIdx,flipped,started,ti};
+    const newState={deck:shuffle([...deck]),deckSize,card,flipped,started,ti,doomOn,doomDrawn};
     showToast(DATA[lang].toastShuffle);
     await pushState(newState);
   } else {showToast(DATA[lang].toastNoShuffle)}
+}
+
+async function toggleDoom(){
+  const on=!doomOn;
+  let newDeck,newSize;
+  if(on){
+    const add=undrawnDoom();
+    newDeck=shuffle([...deck,...add]);newSize=deckSize+add.length;
+  }else{
+    newDeck=deck.filter(e=>!e.d);newSize=deckSize-(deck.length-newDeck.length);
+  }
+  const newState={deck:newDeck,deckSize:newSize,card,flipped,started,ti,doomOn:on,doomDrawn};
+  showToast(DATA[lang][on?"toastDoomOn":"toastDoomOff"]);
+  if(navigator.vibrate)navigator.vibrate(on?[15,40,15]:10);
+  await pushState(newState);
 }
 
 // ══════════════════════════════════════════════
@@ -692,7 +753,7 @@ async function createRoom(){
   isHost=true; isSolo=false; roomCode=code;
 
   const newDeck=buildDeck();
-  const initialState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,ti:0};
+  const initialState={deck:newDeck,deckSize:newDeck.length,card:null,flipped:false,started:false,ti:0,doomOn,doomDrawn:[]};
 
   stateRef=ref(db,`rooms/${code}/state`);
 
@@ -789,7 +850,7 @@ function renderPlayerList(players){
 async function startGame(){
   if(!isHost) return;
   const newDeck=buildDeck();
-  const initialState={deck:newDeck,deckSize:newDeck.length,cardIdx:null,flipped:false,started:false,ti:0,gameStarted:true};
+  const initialState={deck:newDeck,deckSize:newDeck.length,card:null,flipped:false,started:false,ti:0,gameStarted:true,doomOn,doomDrawn:[]};
   await set(stateRef,initialState);
   enterGame();
 }
@@ -873,6 +934,7 @@ $("deckTop").addEventListener("click",drawCard);
 $("cardInner").addEventListener("click",handleCardTap);
 $("resetBtn").addEventListener("click",()=>resetDeck(false));
 $("shuffleBtn").addEventListener("click",shuffleRemaining);
+$("doomBtn").addEventListener("click",toggleDoom);
 $("langBtn").addEventListener("click",()=>{
   lang=lang==="en"?"pl":"en";
   setTexts();updateQ();updateUI();
@@ -883,7 +945,7 @@ const ca=$("cardArea");
 ca.addEventListener("touchstart",e=>{tsy=e.touches[0].clientY;tsx=e.touches[0].clientX},{passive:true});
 ca.addEventListener("touchend",e=>{
   const dy=tsy-e.changedTouches[0].clientY,dx=Math.abs(tsx-e.changedTouches[0].clientX);
-  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard()}else if(cardIdx!==null)flipCard()}
+  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard()}else if(card!==null)flipCard()}
 },{passive:true});
 
 // ── Init ──
