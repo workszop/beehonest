@@ -108,3 +108,44 @@ var QUESTIONS={
     "W jakim filmie toczy się twoje życie i jaką rolę w nim grasz?"
   ]
 };
+
+var DOOM_QUESTIONS={
+  en:[
+    "You have 24 hours left to live. What are 3 things you do?",
+    "If you were forced to become someone else, who would you rather be?",
+    "The Earth explodes in 8 hours. What do people do?",
+    "What would you want the last sentence of your obituary to say?",
+    "You can know the exact date of your death. Do you want to? Why?",
+    "Which of your memories would hurt the most to lose?",
+    "What would your enemies say at your funeral?",
+    "Humanity gets one final message before the end. What should it say?",
+    "Would you rather forget everyone you love, or be forgotten by them?",
+    "What decision do you fear you'll regret on your deathbed?",
+    "The world ends tomorrow. What do you finally confess, and to whom?",
+    "If your life so far had a warning label, what would it say?",
+    "Which version of you died so this one could exist?",
+    "What do you own that should be burned when you die?",
+    "If you had to disappear and start over with nothing, where would you go?",
+    "Everyone forgets you ever existed, but you get to keep one impact you made. Which one?",
+    "You're the last person on Earth. What's your daily routine?"
+  ],
+  pl:[
+    "Zostały ci 24 godziny życia. Jakie 3 rzeczy robisz?",
+    "Gdyby zmuszono cię do bycia kimś innym, kim wolisz zostać?",
+    "Ziemia wybuchnie za 8 godzin. Co robią ludzie?",
+    "Jak ma brzmieć ostatnie zdanie twojego nekrologu?",
+    "Możesz poznać dokładną datę swojej śmierci. Chcesz? Dlaczego?",
+    "Utrata którego wspomnienia zabolałaby cię najbardziej?",
+    "Co powiedzieliby twoi wrogowie na twoim pogrzebie?",
+    "Ludzkość dostaje jedną ostatnią wiadomość przed końcem. Co powinna mówić?",
+    "Wolisz zapomnieć wszystkich, których kochasz, czy zostać przez nich zapomniany?",
+    "Której decyzji – jak się obawiasz – będziesz żałować na łożu śmierci?",
+    "Jutro koniec świata. Co w końcu wyznajesz i komu?",
+    "Gdyby twoje dotychczasowe życie miało etykietę ostrzegawczą, co by na niej było?",
+    "Która wersja ciebie musiała umrzeć, żeby mogła istnieć ta?",
+    "Co posiadasz, co powinno spłonąć po twojej śmierci?",
+    "Gdybyś musiał zniknąć i zacząć od zera bez niczego, dokąd byś pojechał?",
+    "Wszyscy zapominają, że istniałeś, ale możesz zachować jeden ślad, który zostawiłeś. Który?",
+    "Jesteś ostatnią osobą na Ziemi. Jak wygląda twój dzień?"
+  ]
+};

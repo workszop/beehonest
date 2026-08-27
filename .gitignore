@@ -1,0 +1,15 @@
+# Working artifacts – never committed
+mockups/
+plans/
+superpowers/
+scratch/
+progress.md
+review*.md
+*.plan.md
+*.draft.*
+doom.md
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp

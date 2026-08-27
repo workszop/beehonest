@@ -206,6 +206,15 @@ body{
 
 @keyframes cardIn{from{opacity:0;transform:translateY(30px) rotate(-3deg) scale(.9)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
 .card-in{animation:cardIn .4s cubic-bezier(.3,0,.2,1.2)}
+
+/* ── Doom cards ── */
+.doom .card-front,.doom .card-back{background:#1a1a2e}
+.doom .q-text{color:#fff}
+.doom .card-corner{color:#fff;opacity:.15}
+.doom .front-icon{background:rgba(255,255,255,.08);border-color:#fff;box-shadow:3px 3px 0 rgba(255,255,255,.25);color:#fff}
+.doom .front-hint{color:#fff}
+.doom .front-sub{color:rgba(255,255,255,.5)}
+.btn-secondary.doom-on{background:#1a1a2e;color:#fff}
 </style>
 </head>
 <body>
@@ -284,6 +293,9 @@ body{
     <button type="button" class="btn btn-secondary" id="shuffleBtn" title="Shuffle Remaining">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
     </button>
+    <button type="button" class="btn btn-secondary" id="doomBtn" title="Doom cards">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/></svg>
+    </button>
     <button type="button" class="btn btn-primary" id="drawBtn">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
       <span id="drawLabel">Draw card</span>
@@ -307,6 +319,8 @@ const DATA={
     toastReset:"Deck reset",
     toastShuffle:"Cards shuffled",
     toastNoShuffle:"Not enough cards to shuffle",
+    toastDoomOn:"Doom cards added",
+    toastDoomOff:"Doom cards removed",
     questions:[]
   },
   pl:{
@@ -318,11 +332,14 @@ const DATA={
     toastReset:"Talia zresetowana",
     toastShuffle:"Karty przetasowane",
     toastNoShuffle:"Za mało kart",
+    toastDoomOn:"Karty doom dodane",
+    toastDoomOff:"Karty doom usunięte",
     questions:[]
   }
 };
 
-let lang="en",deck=[],deckSize=0,ti=0,flipped=false,cardIdx=null,drawing=false,started=false,toastT=null,tsy=0,tsx=0;
+let lang="en",deck=[],deckSize=0,ti=0,flipped=false,card=null,drawing=false,started=false,toastT=null,tsy=0,tsx=0;
+let doomOn=false,doomDrawn=new Set();
 const $=id=>document.getElementById(id);
 
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -331,7 +348,9 @@ function showToast(m){let t=$("toast");t.textContent=m;t.classList.add("show");c
 function applyTheme(){
   let c=$("cardContainer");
   THEMES.forEach(t=>c.classList.remove(t));
-  c.classList.add(THEMES[ti%THEMES.length]);
+  c.classList.remove("doom");
+  if(card&&card.d)c.classList.add("doom");
+  else c.classList.add(THEMES[ti%THEMES.length]);
 }
 
 function setTexts(){
@@ -344,7 +363,9 @@ function setTexts(){
 }
 
 function updateQ(){
-  $("questionText").textContent=cardIdx!==null?DATA[lang].questions[cardIdx]:"";
+  if(card===null){$("questionText").textContent="";return}
+  let list=card.d?DOOM_QUESTIONS[lang]:DATA[lang].questions;
+  $("questionText").textContent=list[card.i];
 }
 
 function updateUI(){
@@ -373,14 +394,15 @@ function drawCard(){
   let snap=deck;
   setTimeout(()=>{
     if(deck!==snap){drawing=false;return;}
-    cardIdx=deck.pop();updateQ();applyTheme();ti++;
+    card=deck.pop();if(card.d)doomDrawn.add(card.i);
+    updateQ();applyTheme();ti++;
     c.classList.add("card-in");drawing=false;updateUI();
     if(navigator.vibrate)navigator.vibrate(15);
   },80);
 }
 
 function flipCard(){
-  if(cardIdx===null||flipped)return;
+  if(card===null||flipped)return;
   $("cardInner").classList.add("flipped");flipped=true;
   if(navigator.vibrate)navigator.vibrate(10);
   updateUI();
@@ -391,13 +413,36 @@ function handleCardTap(){
   else{if(deck.length>0)drawCard()}
 }
 
+function doomEntries(){
+  let m=Math.min(DOOM_QUESTIONS.en.length,DOOM_QUESTIONS.pl.length),e=[];
+  for(let i=0;i<m;i++)if(!doomDrawn.has(i))e.push({d:1,i});
+  return e;
+}
+
 function resetDeck(silent){
-  let n=Math.max(DATA.en.questions.length,DATA.pl.questions.length);
-  deck=shuffle([...Array(n).keys()]);deckSize=deck.length;
-  ti=0;flipped=false;cardIdx=null;drawing=false;started=false;drawnCount=0;
+  let n=Math.min(DATA.en.questions.length,DATA.pl.questions.length);
+  doomDrawn=new Set();
+  let entries=[...Array(n).keys()].map(i=>({d:0,i}));
+  if(doomOn)entries=entries.concat(doomEntries());
+  deck=shuffle(entries);deckSize=deck.length;
+  ti=0;flipped=false;card=null;drawing=false;started=false;
   $("cardInner").classList.remove("flipped");
   $("cardContainer").classList.remove("card-in");
   updateQ();updateUI();if(!silent)showToast(DATA[lang].toastReset);
+}
+
+function toggleDoom(){
+  doomOn=!doomOn;
+  $("doomBtn").classList.toggle("doom-on",doomOn);
+  if(doomOn){
+    let add=doomEntries();
+    deck=shuffle(deck.concat(add));deckSize+=add.length;
+  }else{
+    let kept=deck.filter(e=>!e.d);
+    deckSize-=deck.length-kept.length;deck=kept;
+  }
+  updateUI();showToast(DATA[lang][doomOn?"toastDoomOn":"toastDoomOff"]);
+  if(navigator.vibrate)navigator.vibrate(doomOn?[15,40,15]:10);
 }
 
 function shuffleRemaining(){
@@ -410,7 +455,8 @@ function shuffleRemaining(){
 }
 
 $("deckTop").addEventListener("click",drawCard);
-$("drawBtn").addEventListener("click",()=>{if(!started)drawCard();else if(flipped)nextCard();else if(!flipped&&cardIdx!==null)flipCard();else drawCard()});
+$("drawBtn").addEventListener("click",()=>{if(!started)drawCard();else if(flipped)drawCard();else if(!flipped&&card!==null)flipCard();else drawCard()});
+$("doomBtn").addEventListener("click",toggleDoom);
 $("cardInner").addEventListener("click",handleCardTap);
 $("resetBtn").addEventListener("click",resetDeck);
 $("shuffleBtn").addEventListener("click",shuffleRemaining);
@@ -420,7 +466,7 @@ let ca=$("cardArea");
 ca.addEventListener("touchstart",e=>{tsy=e.touches[0].clientY;tsx=e.touches[0].clientX},{passive:true});
 ca.addEventListener("touchend",e=>{
   let dy=tsy-e.changedTouches[0].clientY,dx=Math.abs(tsx-e.changedTouches[0].clientX);
-  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard()}else if(cardIdx!==null)flipCard()}
+  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard()}else if(card!==null)flipCard()}
 },{passive:true});
 
 DATA.en.questions=QUESTIONS.en;
