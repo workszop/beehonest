@@ -205,14 +205,19 @@ body{
 .actions{flex-shrink:0;padding-top:14px;display:flex;gap:10px}
 .btn{
   display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:14px 20px;font-size:18px;font-weight:800;
+  padding:9px 20px;font-size:18px;font-weight:800;white-space:nowrap;
   border-radius:16px;border:3px solid #1a1a2e;cursor:pointer;
-  font-family:'Nunito',system-ui,sans-serif;transition:transform .12s,box-shadow .12s;min-height:54px;
+  font-family:'Nunito',system-ui,sans-serif;transition:transform .12s,box-shadow .12s;min-height:44px;
 }
 .btn:active{transform:scale(.95) translateY(2px);box-shadow:2px 2px 0 #1a1a2e !important}
 .btn-primary{flex:1;color:#fff;background:#FF6B6B;box-shadow:4px 4px 0 #1a1a2e}
 .btn-primary:disabled{opacity:.3;pointer-events:none}
-.btn-secondary{background:#fff;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e;padding:14px 18px}
+.btn-secondary{background:#fff;color:#1a1a2e;box-shadow:4px 4px 0 #1a1a2e;padding:9px 18px}
+@media (max-width:420px){
+  .actions{gap:8px}
+  .btn{padding:8px 14px;font-size:15px;min-height:40px}
+  .btn-secondary{padding:8px 12px}
+}
 
 /* Toast */
 .toast{
