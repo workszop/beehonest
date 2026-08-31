@@ -379,9 +379,9 @@ function updateUI(){
   $("progressCount").textContent=d.drawn(drawn,deckSize);
   $("progressRemaining").textContent=d.left(rem);
   $("deckSublabel").textContent=d.left(rem);
-  $("drawBtn").disabled=rem===0;
+  $("drawBtn").disabled=rem===0&&card===null;
 
-  if(rem===0&&started){
+  if(rem===0&&started&&card===null){
     $("deckView").style.display="none";$("cardContainer").style.display="none";$("emptyState").style.display="flex";
   }else if(started){
     $("deckView").style.display="none";$("cardContainer").style.display="block";$("emptyState").style.display="none";
@@ -413,9 +413,16 @@ function flipCard(){
   updateUI();
 }
 
+function dismissCard(){
+  card=null;flipped=false;
+  $("cardInner").classList.remove("flipped");
+  $("cardContainer").classList.remove("card-in");
+  updateQ();updateUI();
+}
+
 function handleCardTap(){
   if(!flipped){flipCard()}
-  else{if(deck.length>0)drawCard()}
+  else{if(deck.length>0)drawCard();else dismissCard()}
 }
 
 function doomEntries(){
@@ -460,10 +467,10 @@ function shuffleRemaining(){
 }
 
 $("deckTop").addEventListener("click",drawCard);
-$("drawBtn").addEventListener("click",()=>{if(!started)drawCard();else if(flipped)drawCard();else if(!flipped&&card!==null)flipCard();else drawCard()});
+$("drawBtn").addEventListener("click",()=>{if(!started)drawCard();else if(flipped){if(deck.length>0)drawCard();else dismissCard()}else if(!flipped&&card!==null)flipCard();else drawCard()});
 $("doomBtn").addEventListener("click",toggleDoom);
 $("cardInner").addEventListener("click",handleCardTap);
-$("resetBtn").addEventListener("click",resetDeck);
+$("resetBtn").addEventListener("click",()=>resetDeck(false));
 $("shuffleBtn").addEventListener("click",shuffleRemaining);
 $("langBtn").addEventListener("click",()=>{lang=lang==="en"?"pl":"en";setTexts();updateQ();updateUI()});
 
@@ -471,7 +478,7 @@ let ca=$("cardArea");
 ca.addEventListener("touchstart",e=>{tsy=e.touches[0].clientY;tsx=e.touches[0].clientX},{passive:true});
 ca.addEventListener("touchend",e=>{
   let dy=tsy-e.changedTouches[0].clientY,dx=Math.abs(tsx-e.changedTouches[0].clientX);
-  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard()}else if(card!==null)flipCard()}
+  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard();else dismissCard()}else if(card!==null)flipCard()}
 },{passive:true});
 
 DATA.en.questions=QUESTIONS.en;

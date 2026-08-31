@@ -433,7 +433,7 @@ body{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
   getDatabase, ref, set, get, onValue, off,
-  remove, onDisconnect, serverTimestamp
+  remove, onDisconnect, serverTimestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
 
 // ══════════════════════════════════════════════
@@ -484,8 +484,11 @@ const DATA={
     roomCreated:"Room created",roomJoined:"Joined room",roomLeft:"Left room",
     lbLabel:"Room code — share with friends",lbSub:"Tap code to copy",
     lbPlayersLabel:"Players online",lbHint:"Waiting for others… Host starts the game.",
+    lbHintHost:"Start the game when everyone has joined.",
     lbStartBtn:"Start game",lbLeaveBtn:"Leave room",
+    plHost:"Host",plPlayer:n=>"Player "+n,
     errNotFound:"Room not found",errFirebase:"Firebase not configured — playing solo",
+    errNoCode:"Enter a room code",errConnection:"Connection error",
     questions:[]
   },
   pl:{
@@ -500,8 +503,11 @@ const DATA={
     roomCreated:"Pokój utworzony",roomJoined:"Dołączono do pokoju",roomLeft:"Opuszczono pokój",
     lbLabel:"Kod pokoju — udostępnij znajomym",lbSub:"Dotknij kod, aby skopiować",
     lbPlayersLabel:"Gracze online",lbHint:"Czekam na innych… Host startuje grę.",
+    lbHintHost:"Rozpocznij grę, gdy wszyscy dołączą.",
     lbStartBtn:"Rozpocznij grę",lbLeaveBtn:"Opuść pokój",
+    plHost:"Host",plPlayer:n=>"Gracz "+n,
     errNotFound:"Nie znaleziono pokoju",errFirebase:"Firebase nie skonfigurowany — tryb solo",
+    errNoCode:"Wpisz kod pokoju",errConnection:"Błąd połączenia",
     questions:[]
   }
 };
@@ -510,8 +516,8 @@ const DATA={
 //  STATE
 // ══════════════════════════════════════════════
 let lang="en", deck=[], deckSize=0, ti=0, flipped=false, card=null, drawing=false, started=false, toastT=null, tsy=0, tsx=0;
-let doomOn=false, doomDrawn=[];
-let roomCode=null, myPlayerId=null, isHost=false, isSolo=false;
+let doomOn=false, doomDrawn=[], gameStarted=false;
+let roomCode=null, myPlayerId=null, isHost=false, isSolo=false, lastPlayers={};
 let stateRef=null, presenceRef=null;
 let playersListener=null;
 
@@ -558,7 +564,7 @@ function setTexts(){
   $("hive-or").textContent=d.hiveOr;
   // lobby
   $("lb-label").textContent=d.lbLabel;$("lb-sub").textContent=d.lbSub;
-  $("lb-players-label").textContent=d.lbPlayersLabel;$("lb-hint").textContent=d.lbHint;
+  $("lb-players-label").textContent=d.lbPlayersLabel;$("lb-hint").textContent=d[isHost?"lbHintHost":"lbHint"];
   $("lb-start-btn").textContent=d.lbStartBtn;$("lb-leave-btn").textContent=d.lbLeaveBtn;
 }
 
@@ -586,8 +592,7 @@ function updateUI(){
   $("progressCount").textContent=d.drawn(drawn,deckSize);
   $("progressRemaining").textContent=d.left(rem);
   $("deckSublabel").textContent=d.left(rem);
-  $("hiveBtn").disabled=rem===0;
-  if(rem===0&&started){
+  if(rem===0&&started&&card===null){
     $("deckView").style.display="none";$("cardContainer").style.display="none";$("emptyState").style.display="flex";
   } else if(started){
     $("deckView").style.display="none";$("cardContainer").style.display="block";$("emptyState").style.display="none";
@@ -600,21 +605,34 @@ function updateUI(){
 // ══════════════════════════════════════════════
 //  GAME LOGIC
 // ══════════════════════════════════════════════
-function buildDeck(){
+function buildDeck(withDoom){
   const n=Math.min(DATA.en.questions.length,DATA.pl.questions.length);
   let entries=[...Array(n).keys()].map(i=>({d:0,i}));
-  if(doomOn){
+  if(withDoom){
     const m=Math.min(DOOM_QUESTIONS.en.length,DOOM_QUESTIONS.pl.length);
     for(let i=0;i<m;i++)entries.push({d:1,i});
   }
   return shuffle(entries);
 }
 
-function undrawnDoom(){
-  const seen=new Set(doomDrawn);
+function undrawnDoom(drawn){
+  const seen=new Set(drawn);
   const m=Math.min(DOOM_QUESTIONS.en.length,DOOM_QUESTIONS.pl.length),e=[];
   for(let i=0;i<m;i++)if(!seen.has(i))e.push({d:1,i});
   return e;
+}
+
+function normState(s){
+  return {
+    deck:(s.deck||[]).map(normCard),
+    deckSize:s.deckSize||(s.deck||[]).length,
+    card:normCard(s.card??s.cardIdx??null),
+    flipped:s.flipped||false,
+    started:s.started||false,
+    ti:s.ti||0,
+    doomOn:s.doomOn||false,
+    doomDrawn:s.doomDrawn||[]
+  };
 }
 
 // Apply state to UI (called by onValue listener for everyone)
@@ -628,6 +646,7 @@ function applyGameState(state){
   ti=state.ti||0;
   doomOn=state.doomOn||false;
   doomDrawn=state.doomDrawn||[];
+  gameStarted=state.gameStarted||false;
   $("doomBtn").classList.toggle("doom-on",doomOn);
   drawing=false; // always unlock after remote state arrives
 
@@ -653,82 +672,90 @@ function applyGameState(state){
   updateQ();applyTheme();updateUI();
 }
 
-// Push local state to Firebase (solo: apply directly)
-async function pushState(newState){
+// Apply a mutation to the authoritative state. `fn` receives the current
+// normalized state and returns only the changed fields, or null to abort.
+// Multiplayer goes through a transaction so concurrent players can't
+// roll back each other's moves, and room-level keys (gameStarted) survive.
+async function mutate(fn){
   if(isSolo){
-    // In solo mode apply locally
-    applyGameState({
-      deck:newState.deck??deck,
-      deckSize:newState.deckSize??deckSize,
-      card:newState.card??card,
-      flipped:newState.flipped??flipped,
-      started:newState.started??started,
-      ti:newState.ti??ti,
-      doomOn:newState.doomOn??doomOn,
-      doomDrawn:newState.doomDrawn??doomDrawn
-    });
+    const cur=normState({deck,deckSize,card,flipped,started,ti,doomOn,doomDrawn});
+    const changes=fn(cur);
+    if(!changes) return;
+    applyGameState({...cur,...changes});
     return;
   }
   if(!db||!stateRef) return;
-  try { await set(stateRef, newState); } catch(e){ console.error('pushState error',e); }
+  try {
+    await runTransaction(stateRef,cur=>{
+      // First run may get null from an empty local cache; propose a value built
+      // from the synced local state — the server CAS retries with real data if stale.
+      const base=cur==null?{deck,deckSize,card,flipped,started,ti,doomOn,doomDrawn,gameStarted}:cur;
+      const norm=normState(base);
+      const changes=fn(norm);
+      if(!changes) return; // returning undefined aborts the transaction
+      const out={...base,...norm,...changes};
+      delete out.cardIdx; // purge legacy key so it can't shadow card:null
+      return out;
+    });
+  } catch(e){ console.error('mutate error',e); }
 }
 
 function drawCard(){
   if(!deck.length||drawing) return;
-  drawing=true; // lock until Firebase echoes back
-  const newDeck=[...deck];
-  const newCard=newDeck.pop();
-  const newDoomDrawn=newCard.d?[...doomDrawn,newCard.i]:doomDrawn;
-  const newState={
-    deck:newDeck, deckSize,
-    card:newCard, flipped:false,
-    started:true, ti:ti+1,
-    doomOn, doomDrawn:newDoomDrawn
-  };
+  drawing=true; // lock until state echoes back
   if(navigator.vibrate)navigator.vibrate(15);
-  pushState(newState);
+  mutate(s=>{
+    if(!s.deck.length) return null;
+    const newDeck=[...s.deck];
+    const newCard=newDeck.pop();
+    return {
+      deck:newDeck, card:newCard, flipped:false, started:true, ti:s.ti+1,
+      doomDrawn:newCard.d?[...s.doomDrawn,newCard.i]:s.doomDrawn
+    };
+  }).finally(()=>{drawing=false});
 }
 
 function flipCard(){
   if(card===null||flipped) return;
-  const newState={deck,deckSize,card,flipped:true,started,ti,doomOn,doomDrawn};
   if(navigator.vibrate)navigator.vibrate(10);
-  pushState(newState);
+  mutate(s=>s.card!==null&&!s.flipped?{flipped:true}:null);
 }
 
-function handleCardTap(){if(!flipped){flipCard()}else{if(deck.length>0)drawCard()}}
+function dismissCard(){
+  mutate(s=>s.deck.length===0&&s.card!==null?{card:null,flipped:false}:null);
+}
+
+function handleCardTap(){if(!flipped){flipCard()}else{if(deck.length>0)drawCard();else dismissCard()}}
 
 async function resetDeck(silent){
   drawing=false;
-  doomDrawn=[];
-  const newDeck=buildDeck();
-  const newState={deck:newDeck,deckSize:newDeck.length,card:null,flipped:false,started:false,ti:0,doomOn,doomDrawn:[]};
   if(!silent) showToast(DATA[lang].toastReset);
-  await pushState(newState);
+  await mutate(s=>{
+    const newDeck=buildDeck(s.doomOn);
+    return {deck:newDeck,deckSize:newDeck.length,card:null,flipped:false,started:false,ti:0,doomDrawn:[]};
+  });
   if(isSolo){ $('cardInner').classList.remove('flipped'); $('cardContainer').classList.remove('card-in'); }
 }
 
 async function shuffleRemaining(){
   if(deck.length>1){
-    const newState={deck:shuffle([...deck]),deckSize,card,flipped,started,ti,doomOn,doomDrawn};
     showToast(DATA[lang].toastShuffle);
-    await pushState(newState);
+    await mutate(s=>s.deck.length>1?{deck:shuffle([...s.deck])}:null);
   } else {showToast(DATA[lang].toastNoShuffle)}
 }
 
 async function toggleDoom(){
   const on=!doomOn;
-  let newDeck,newSize;
-  if(on){
-    const add=undrawnDoom();
-    newDeck=shuffle([...deck,...add]);newSize=deckSize+add.length;
-  }else{
-    newDeck=deck.filter(e=>!e.d);newSize=deckSize-(deck.length-newDeck.length);
-  }
-  const newState={deck:newDeck,deckSize:newSize,card,flipped,started,ti,doomOn:on,doomDrawn};
   showToast(DATA[lang][on?"toastDoomOn":"toastDoomOff"]);
   if(navigator.vibrate)navigator.vibrate(on?[15,40,15]:10);
-  await pushState(newState);
+  await mutate(s=>{
+    if(!s.doomOn){
+      const add=undrawnDoom(s.doomDrawn);
+      return {deck:shuffle([...s.deck,...add]),deckSize:s.deckSize+add.length,doomOn:true};
+    }
+    const kept=s.deck.filter(e=>!e.d);
+    return {deck:kept,deckSize:s.deckSize-(s.deck.length-kept.length),doomOn:false};
+  });
 }
 
 // ══════════════════════════════════════════════
@@ -747,17 +774,29 @@ function showScreen(id){
 // ══════════════════════════════════════════════
 //  FIREBASE – ROOM MANAGEMENT
 // ══════════════════════════════════════════════
+// Detach everything tied to the current room: listeners, presence, onDisconnect
+function detachRoom(){
+  if(stateRef){off(stateRef);stateRef=null;}
+  if(playersListener){off(playersListener);playersListener=null;}
+  if(presenceRef){
+    onDisconnect(presenceRef).cancel().catch(()=>{});
+    remove(presenceRef).catch(()=>{});
+    presenceRef=null;
+  }
+}
+
 async function createRoom(){
   if(!firebaseOk){
     showToast(DATA[lang].errFirebase);
     startSolo(); return;
   }
+  detachRoom();
 
   const code=genCode();
   myPlayerId='host_'+Date.now();
   isHost=true; isSolo=false; roomCode=code;
 
-  const newDeck=buildDeck();
+  const newDeck=buildDeck(doomOn);
   const initialState={deck:newDeck,deckSize:newDeck.length,card:null,flipped:false,started:false,ti:0,doomOn,doomDrawn:[]};
 
   stateRef=ref(db,`rooms/${code}/state`);
@@ -783,12 +822,13 @@ async function createRoom(){
 async function joinRoom(code){
   if(!firebaseOk){showToast(DATA[lang].errFirebase);startSolo();return;}
   code=code.toUpperCase().trim();
-  if(!code){$("hiveError").textContent="Enter a room code";return;}
+  if(!code){$("hiveError").textContent=DATA[lang].errNoCode;return;}
 
   try {
     const snap=await get(ref(db,`rooms/${code}`));
     if(!snap.exists()){$("hiveError").textContent=DATA[lang].errNotFound;return;}
 
+    detachRoom(); // leave the previous room only once the new one is confirmed
     myPlayerId="p_"+Date.now();
     isHost=false; isSolo=false;
     roomCode=code;
@@ -809,7 +849,7 @@ async function joinRoom(code){
     showToast(DATA[lang].roomJoined);
   } catch(e){
     console.error(e);
-    $("hiveError").textContent="Connection error";
+    $("hiveError").textContent=DATA[lang].errConnection;
   }
 }
 
@@ -821,13 +861,13 @@ function enterLobby(code){
   // Listen to players list
   playersListener=ref(db,`rooms/${code}/players`);
   onValue(playersListener,(snap)=>{
-    const players=snap.val()||{};
-    renderPlayerList(players);
+    lastPlayers=snap.val()||{};
+    renderPlayerList(lastPlayers);
   });
 
   // Show start button only for host
   $("startBtn").style.display=isHost?"flex":"none";
-  $("lb-hint").textContent=isHost?"Start the game when everyone has joined.":DATA[lang].lbHint;
+  $("lb-hint").textContent=DATA[lang][isHost?"lbHintHost":"lbHint"];
 
   // Listen for game start (non-hosts)
   if(!isHost){
@@ -846,7 +886,7 @@ function renderPlayerList(players){
     const dot=document.createElement("div");
     dot.className="player-dot"+(p.isHost?" host":"");
     const name=document.createElement("span");
-    name.textContent=p.isHost?"Host":"Player "+(i);
+    name.textContent=p.isHost?DATA[lang].plHost:DATA[lang].plPlayer(i);
     item.appendChild(dot);item.appendChild(name);
     list.appendChild(item);
   });
@@ -854,7 +894,7 @@ function renderPlayerList(players){
 
 async function startGame(){
   if(!isHost) return;
-  const newDeck=buildDeck();
+  const newDeck=buildDeck(doomOn);
   const initialState={deck:newDeck,deckSize:newDeck.length,card:null,flipped:false,started:false,ti:0,gameStarted:true,doomOn,doomDrawn:[]};
   await set(stateRef,initialState);
   enterGame();
@@ -874,10 +914,8 @@ function enterGame(){
   showScreen("gameScreen");
 }
 
-async function leaveRoom(){
-  if(presenceRef) await remove(presenceRef);
-  if(stateRef) off(stateRef);
-  if(playersListener) off(playersListener);
+function leaveRoom(){
+  detachRoom(); // presence removal is fire-and-forget so offline can't wedge us here
   roomCode=null;myPlayerId=null;isHost=false;
   showToast(DATA[lang].roomLeft);
   isSolo=true; showScreen("gameScreen"); resetDeck(true);
@@ -942,7 +980,7 @@ $("shuffleBtn").addEventListener("click",shuffleRemaining);
 $("doomBtn").addEventListener("click",toggleDoom);
 $("langBtn").addEventListener("click",()=>{
   lang=lang==="en"?"pl":"en";
-  setTexts();updateQ();updateUI();
+  setTexts();updateQ();updateUI();renderPlayerList(lastPlayers);
 });
 
 // Touch swipe
@@ -950,7 +988,7 @@ const ca=$("cardArea");
 ca.addEventListener("touchstart",e=>{tsy=e.touches[0].clientY;tsx=e.touches[0].clientX},{passive:true});
 ca.addEventListener("touchend",e=>{
   const dy=tsy-e.changedTouches[0].clientY,dx=Math.abs(tsx-e.changedTouches[0].clientX);
-  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard()}else if(card!==null)flipCard()}
+  if(dy>60&&dy>dx){if(flipped){if(deck.length>0)drawCard();else dismissCard()}else if(card!==null)flipCard()}
 },{passive:true});
 
 // ── Init ──
